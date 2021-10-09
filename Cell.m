@@ -1,7 +1,7 @@
 classdef Cell < handle
     properties
         name = "None"
-        g1
+        gsyn
         exc_or_in
         C_m
         G_m
@@ -15,9 +15,11 @@ classdef Cell < handle
         beta
         type
         
-        %Dynamic Variables
+        %Dynamic Variables 
+%         Must be lists for visualization
         Gsyn
         V_m
+        Delta_Ve
 
         lambda
         sigma
@@ -37,7 +39,6 @@ classdef Cell < handle
     methods
         function self = Cell(i,pos)
                 self.name = i;
-                self.g1 = 1.5;
                 self.x = pos(1);
                 self.y = pos(2);
                 self.z = pos(3);
