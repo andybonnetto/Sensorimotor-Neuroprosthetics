@@ -56,206 +56,169 @@ classdef Cell < handle
                 self.G_m = 4*nS;
                 self.tau_rest = 20*ms;
                 self.E_rest = -50*mV;
-                
-                if self.exc_or_in == "exc"
-                    self.E_syn = -8*mV;
-                    self.g_min = 0;
-                    self.g_max = 0.9*nS;
-                    self.type = "D";
-                end
 
-                if self.exc_or_in == "in"
-                    self.E_syn = -67*mV;
-                    self.g_min = 0;
-                    self.g_max = 3*nS;
-                    self.V_50 = -29.5*mV;
-                    self.beta = 7.4*mV;
-                    self.type = "I";
-                end
+                self.E_syn = [-8*mV,-67*mV];
+                self.g_min = [0,0];
+                self.g_max = [0.9*nS,3*nS];
+                self.type = ["D","I"];
+                self.V_50 = [0, -29.5*mV];
+                self.beta = [0, 7.4*mV];
 
                 self.lambda = 2.5*um;
                 self.sigma = 2.5*um;
                 self.z_min = 170*um;
                 self.z_max = 205*um;
                 self.n = 4105;
-            end
         % HRZ cells
-            if self.name == "HRZ"
-                self.exc_or_in = "exc";
+            elseif self.name == "HRZ"
                 self.C_m = 210*pF;
                 self.G_m = 2.5*nS;
                 self.tau_rest = 84*ms;
-                self.E_rest = -65*mV; 
-                self.E_syn = 0;
-                self.g_min = 0;
-                self.g_max = 7*nS;
-                self.V_50 = -43*mV;
-                self.beta = 2*mV;
-                self.type = "I";
+                self.E_rest = -65*mV;
+
+                self.E_syn = [0];
+                self.g_min = [0];
+                self.g_max = [7*nS];
+                self.V_50 = [-43*mV];
+                self.beta = [2*mV];
+                self.type = ["I"];
 
                 self.lambda = 7*um;
                 self.sigma = 10.5*um;
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 537;
-            end
         % BP_on cells
-            if self.name == "BP_on"
-                self.exc_or_in = "exc";
+            elseif self.name == "BP_on"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
-                self.E_rest = -45*mV; 
-                self.E_syn = 0;
-                self.g_min = 0.1*nS;
-                self.g_max = 1.1*nS;
-                self.V_50 = -47*mV;
-                self.beta = 1.7*mV;
-                self.type = "D";
+                self.E_rest = -45*mV;
+
+                self.E_syn = [0,0];
+                self.g_min = [0.1*nS,0.1*nS];
+                self.g_max = [1.1*nS,1.1*nS];
+                self.V_50 = [-47*mV,-47*mV];
+                self.beta = [1.7*mV,1.7*mV];
+                self.type = ["D","D"];
 
                 self.lambda = 3.85*um;
                 self.sigma = 3.85*um;
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 1741;
-            end
         % BP_off cells
-            if self.name == "BP_off"
-                self.exc_or_in = "exc";
+            elseif self.name == "BP_off"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
                 self.E_rest = -45*mV; 
-                self.E_syn = 0;
-                self.g_min = 0;
-                self.g_max = 3.75*nS;
-                self.V_50 = -41.5*mV;
-                self.beta = 1.2*mV;
-                self.type = "I";
+
+                self.E_syn = [0];
+                self.g_min = [0];
+                self.g_max = [3.75*nS];
+                self.V_50 = [-41.5*mV];
+                self.beta = [1.2*mV];
+                self.type = ["I"];
 
                 self.lambda = 3.85*um;
                 self.sigma = 3.85*um;
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 1741;
-            end
         % AM_WF_on cells
-            if self.name == "AM_WF_on"
-                self.exc_or_in = "exc";
+            elseif self.name == "AM_WF_on"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
                 self.E_rest = -50*mV; 
-                self.E_syn = 0;
-                self.g_min = 0;
-                self.g_max = 1*nS;
-                self.V_50 = -33.5*mV;
-                self.beta = 3*mV;
-                self.type = "I";
+
+                self.E_syn = [0];
+                self.g_min = [0];
+                self.g_max = [1*nS];
+                self.V_50 = [-33.5*mV];
+                self.beta = [3*mV];
+                self.type = ["I"];
 
                 self.lambda = 8*um;
                 self.sigma = 24*um;
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 391;
-            end
         % AM_WF_off cells
-            if self.name == "AM_WF_off"
-                self.exc_or_in = "exc";
+            elseif self.name == "AM_WF_off"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
-                self.E_rest = -50*mV; 
-                self.E_syn = 0;
-                self.g_min = 0;
-                self.g_max = 1.8*nS;
-                self.V_50 = -44*mV;
-                self.beta = 3*mV;
-                self.type = "I";
+                self.E_rest = -50*mV;
+
+                self.E_syn = [0];
+                self.g_min = [0];
+                self.g_max = [1.8*nS];
+                self.V_50 = [-44*mV];
+                self.beta = [3*mV];
+                self.type = ["I"];
 
                 self.lambda = 8*um;
                 self.sigma = 24*um;
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 391;
-            end
         % AM_NF_on cells
-            if self.name == "AM_NF_on"
-                self.exc_or_in = "exc";
+            elseif self.name == "AM_NF_on"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
                 self.E_rest = -50*mV; 
-                self.E_syn = 0;
-                self.g_min = 0;
-                self.g_max = 0.2*nS;
-                self.V_50 = -35*mV;
-                self.beta = 3*mV;
-                self.type = "I";
+
+                self.E_syn = [0];
+                self.g_min = [0];
+                self.g_max = [0.2*nS];
+                self.V_50 = [-35*mV];
+                self.beta = [3*mV];
+                self.type = ["I"];
 
                 self.lambda = 6*um;
                 self.sigma = 6*um;
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 721;
-            end
+            
         % GL_on cells
-            if self.name == "GL_on"
+            elseif self.name == "GL_on"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
                 self.E_rest = -60*mV;
                 self.E_T = -50.6*mV;
-                
-                if self.exc_or_in == "exc"
-                    self.E_syn = 0;
-                    self.g_min = 0;
-                    self.g_max = 2.5*nS;
-                    self.V_50 = -33.5*mV;
-                    self.beta = 3*mV;
-                    self.type = "I";
-                end
 
-                if self.exc_or_in == "in"
-                    self.E_syn = -70*mV;
-                    self.g_min = 0;
-                    self.g_max = 2*nS;
-                    self.V_50 = -42.5*mV;
-                    self.beta = 2.5*mV;
-                    self.type = "I";
-                end
+                self.E_syn = [0,-70*mV];
+                self.g_min = [0,0];
+                self.g_max = [2.5*nS,2*nS];
+                self.V_50 = [-33.5*mV, -42.5*mV];
+                self.beta = [3*mV,2.5*mV];
+                self.type = ["I","I"];
 
                 self.lambda = 6*um;
                 self.sigma = 6*um;
                 self.z_min = 25*um;
                 self.z_max = 39*um;
                 self.n = 721;
-            end
+            
         % GL_off cells
-            if self.name == "GL_off"
+            elseif self.name == "GL_off"
                 self.C_m = 50*pF;
                 self.G_m = 2*nS;
                 self.tau_rest = 25*ms;
                 self.E_rest = -60*mV;
                 self.E_T = -54.1*mV;
                 
-                if self.exc_or_in == "exc"
-                    self.E_syn = 0;
-                    self.g_min = 0;
-                    self.g_max = 2.5*nS;
-                    self.V_50 = -44*mV;
-                    self.beta = 3*mV;
-                    self.type = "I";
-                end
-
-                if self.exc_or_in == "in"
-                    self.E_syn = -70*mV;
-                    self.g_min = 0;
-                    self.g_max = 2.5*nS;
-                    self.V_50 = -34.4*mV;
-                    self.beta = 2.5*mV;
-                    self.type = "I";
-                end
+                self.E_syn = [0,-70*mV];
+                self.g_min = [0,0];
+                self.g_max = [2.5*nS,2.5*nS];
+                self.V_50 = [-44*mV,-34.4*mV];
+                self.beta = [3*mV,2.5*mV];
+                self.type = ["I","I"];
 
                 self.lambda = 6*um;
                 self.sigma = 6*um;
