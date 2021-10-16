@@ -1,13 +1,18 @@
-function Script()
+function Temporal_modeling()
+% Temporal modeling runs the time loop while updating membrane potentials
+% of each cells in cell_list. The firing rate is also calculated at each
+% time step for Ganglion cells.
+% Simulation duration and time constants are stored in Constants.m
+% Cell object definition are declared in Cell.m
+
     import Cell.*
     import Constants.*
 
-    %Time modeling
-    %Sould be already defined
-        %Cell_list,Delta_Ve on each cell, hierarchy
-    Cell1 = Cell("CR",[1,1,1]);
-    Cell2 = Cell("BP_on", [0,1,0]);
-    Cell3 = Cell("HRZ", [0,0,3]);
+    %Defined in FEM and Spatial_modeling
+        %Cell list generation
+    Cell1 = Cell("CR",[0,0,0]);
+    Cell2 = Cell("BP_on", [0,0,0]);
+    Cell3 = Cell("HRZ", [0,0,0]);
 
     Cell1.pre_syn_subset = [2,3];
     Cell1.post_syn_subset = [2];
@@ -16,36 +21,46 @@ function Script()
     Cell3.post_syn_subset = [1];
     Cell3.pre_syn_subset = [];
     cell_list = [Cell1,Cell2,Cell3];
-
+        % Extracelullar voltage generation
     for cell = cell_list
         cell.Delta_Ve = 0; 
     end
 
     %Initialization at time t=0
-    cell_list = initialization(cell_list);
+    cell_list = initialization(cell_list); %Random values of V_m for each cell
     double t;
-    %TIME LOOP
+    %Time loop
         for i = [2:Constants.t_size]
-    %         Update Gsyns at time t=tau syn
+            %Update Gsyns at time t=tau syn
             for cell = cell_list
                 for syn = 1:length(cell.pre_syn_subset)
                     cell.Gsyn(syn,i) = get_Gsyn(cell,cell_list,i, syn);
                 end
             end
-            %Update V_m at time tau_syn
+            %Update V_m at time t=tau_syn
             for cell = cell_list
                 start = i*Constants.time_coeff-(Constants.time_coeff-1);
                 stop = start + Constants.time_coeff - 1;
                 cell.V_m(start:stop) = update_V_m(cell_list,cell,i);
             end
         end
-    % plot(cell_list(1).Gsyn(1,2:end))
-    % plot(cell_list(1).Gsyn(1,:))
-    plot(cell_list(1).V_m)
+    %Visualization
+        %G_syn visualization
+    f1 = figure();
+    t = linspace(Constants.tau_syn,Constants.simulation_duration,Constants.t_size);
+    plot(t(2:end),cell_list(1).Gsyn(1,2:end))
+        %V_m visualization
+    t = linspace(0,Constants.simulation_duration,Constants.t_size*Constants.time_coeff);
+    f2 = figure();
+    plot(t,cell_list(1).V_m)
     hold on 
-    plot(cell_list(2).V_m)
+    plot(t,cell_list(2).V_m)
     hold on
-    plot(cell_list(3).V_m)
+    plot(t,cell_list(3).V_m)
+    title("Membrane potential")
+    xlabel("Time [seconds]")
+    ylabel("Voltage [V]")
+    legend({cell_list(1).name,cell_list(2).name,cell_list(3).name})
 
 %     Ganglion Cell pseudo sigmoid tests
 %     GCell = Cell("GL_on", [1,1,1]);
@@ -63,44 +78,70 @@ function Script()
 %     function Gsyn = calculate_Gsyn_light(Source,cell)
 %         L = Source.get_itensity(cell.x,cell.y);
 %         Gsyn = cell.g_min + (cell.g_max - cell.g_min)*(Source.L_max-L); 
-    end
+    
+end
 
 
 function Gsyn = get_Gsyn(cell, cell_list, i, syn)
+% Update Gsyn value of given cell based on presynaptic inputs at time
+% t-tau_syn.
+% Inputs :  cell : Cell obj investigated
+%           cell_list : List of Cell obj
+%           i : current time index
+%           syn: syn index with respect to pre_syn_subset of given cell
+% Outputs : Gsyn = unsigned scalar value -> must be assigned to cell.Gsyn
+    
+    % Initialization
     i= double(i);
-    D = 100e-6;
+    D = 100e-6; %TODO change to distances for each pre_syn cell
     W = exp(-D/cell.sigma);
     pre_syn = cell_list(cell.pre_syn_subset(syn));
     
+    % Get excitatory or inhibitory index
     ind = get_syn_ind(cell,pre_syn);
-
+    
+    % Calculation of g_syn
     if cell.type(ind) == "D"
         g_syn = cell.g_min(ind) + (cell.g_max(ind) - cell.g_min(ind))*(1-1/((1+exp(pre_syn.V_m(i*Constants.time_coeff-(Constants.time_coeff-1)-1)-cell.V_50(ind)))/cell.beta(ind)));
     elseif cell.type(ind) == "I"
         g_syn = cell.g_min(ind) + (cell.g_max(ind) - cell.g_min(ind))/((1+exp(pre_syn.V_m(i*Constants.time_coeff-(Constants.time_coeff-1)-1)-cell.V_50(ind)))/cell.beta(ind));
     end
+
+    % Calculation of Gsyn 
     Gsyn = 1/W*g_syn*exp(-D/cell.sigma);
-    
-    if ind == 2
-        Gsyn = -Gsyn;
-    end
 end
 
 function ind = get_syn_ind(cell,pre_syn)
+% Get excitatory or Inhibitory index : 1 : Excitatory; 2 : Inhibitory
+% Used to reach the right values in Cell object depending on Synapses
+% Inputs :  cell : Cell obj investigated
+%           pre_syn : Cell obj, presynaptic neuron of cell
+% Outputs : ind : 1 or 2 for Excitatory or Inhibitory respectively, ind 3
+% is for special case from AM_NF_on to GL_off inhibitory connection.
+
+% Only CR, GL and BP_on cells have inhibitory inputs
      if cell.name == "CR"
         ind = 2;
     elseif cell.name == "GL_on" || cell.name == "GL_off"
-        if pre_syn.name == "AM_WF_off" || pre_syn.name == "AM_WF_on" || pre_syn.name == "AM_NF_on"
+        if cell.name == "GL_off" && pre_syn.name == "AM_NF_on"
+            ind = 3;
+        elseif pre_syn.name == "AM_WF_off" || pre_syn.name == "AM_WF_on" || pre_syn.name == "AM_NF_on"
             ind = 2;
         end
-    elseif cell.name == "BP_on"
-        ind = 2;
     else
         ind = 1;
      end
 end
 
 function V = update_V_m(cell_list,Cell,i)
+% Update membrane potential of given cell using first order differential
+% equation. Results are calculated at every tau_syn in time_steps and given
+% in a list of scalars.
+% Inputs :   cell_list : list of cell obj
+%            Cell : cell obj invastigated
+%            i : current time index
+% Outputs :  V : List of Constants.time_coeff unsigned scalar elements
+            
     syms V_m(k)
     l = 1;
     tot = 0;
@@ -122,6 +163,8 @@ function V = update_V_m(cell_list,Cell,i)
 end
 
 function cell_list = initialization(cell_list)
+% Initialization of membrane potential and synaptic conductances
+% Must be later change to initial values 
     for cell = cell_list
         cell.V_m = ones(1,Constants.t_size*Constants.time_coeff)*rand*(-0.7);
         cell.Gsyn = zeros(length(cell.pre_syn_subset),Constants.t_size);
@@ -129,9 +172,9 @@ function cell_list = initialization(cell_list)
 end
 
 function S = get_firing_rate(cell,i)
+% Calculate firing rate of ganglion cells base on their membrane potential
     delta_V0 = 5e-3;
     delta_V = max(0,(cell.V_m(i)-cell.E_T));
-    delta_V
     n = 2 + (0.1*delta_V)^2;
     S = (delta_V^n)/(delta_V^n + delta_V0^n);
 end

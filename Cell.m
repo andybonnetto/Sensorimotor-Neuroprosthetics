@@ -28,6 +28,8 @@ classdef Cell < handle
 
         post_syn_subset
         pre_syn_subset  
+        distance_post_syn
+        distance_pre_syn
 
         n
         %Position Variables
@@ -96,11 +98,11 @@ classdef Cell < handle
                 self.E_rest = -45*mV;
 
                 self.E_syn = [0,0];
-                self.g_min = [0.1*nS,0.1*nS];
-                self.g_max = [1.1*nS,1.1*nS];
-                self.V_50 = [-47*mV,-47*mV];
-                self.beta = [1.7*mV,1.7*mV];
-                self.type = ["D","D"];
+                self.g_min = [0.1*nS];
+                self.g_max = [1.1*nS];
+                self.V_50 = [-47*mV];
+                self.beta = [1.7*mV];
+                self.type = ["D"];
 
                 self.lambda = 3.85*um;
                 self.sigma = 3.85*um;
@@ -213,11 +215,11 @@ classdef Cell < handle
                 self.E_rest = -60*mV;
                 self.E_T = -54.1*mV;
                 
-                self.E_syn = [0,-70*mV];
-                self.g_min = [0,0];
-                self.g_max = [2.5*nS,2.5*nS];
-                self.V_50 = [-44*mV,-34.4*mV];
-                self.beta = [3*mV,2.5*mV];
+                self.E_syn = [0,-70*mV, -80*mV];
+                self.g_min = [0,0,0];
+                self.g_max = [2.5*nS,2.5*nS,2.0*nS];
+                self.V_50 = [-44*mV,-34.4*mV, -47.5*mV];
+                self.beta = [3*mV,2.5*mV, 2.0*mV];
                 self.type = ["I","I"];
 
                 self.lambda = 6*um;
