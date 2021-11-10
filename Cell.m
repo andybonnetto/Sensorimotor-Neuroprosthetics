@@ -2,7 +2,6 @@ classdef Cell < handle
     properties
         name = "None"
         gsyn
-        exc_or_in
         C_m
         G_m
         tau_rest
@@ -26,10 +25,11 @@ classdef Cell < handle
         z_min
         z_max
 
+        pre_syn_subset
+        dist_pre_syn_subset
         post_syn_subset
-        pre_syn_subset  
-        distance_post_syn
-        distance_pre_syn
+        dist_post_syn_subset
+        color
 
         n
         %Position Variables
@@ -71,6 +71,8 @@ classdef Cell < handle
                 self.z_min = 170*um;
                 self.z_max = 205*um;
                 self.n = 4105;
+
+                self.color = 'k';
         % HRZ cells
             elseif self.name == "HRZ"
                 self.C_m = 210*pF;
@@ -90,6 +92,8 @@ classdef Cell < handle
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 537;
+
+                self.color = 'r';
         % BP_on cells
             elseif self.name == "BP_on"
                 self.C_m = 50*pF;
@@ -109,6 +113,8 @@ classdef Cell < handle
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 1741;
+
+                self.color = 'b';
         % BP_off cells
             elseif self.name == "BP_off"
                 self.C_m = 50*pF;
@@ -128,6 +134,9 @@ classdef Cell < handle
                 self.z_min = 100*um;
                 self.z_max = 128*um;
                 self.n = 1741;
+
+                self.color = 'b';
+ 
         % AM_WF_on cells
             elseif self.name == "AM_WF_on"
                 self.C_m = 50*pF;
@@ -147,6 +156,8 @@ classdef Cell < handle
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 391;
+                self.color = 'g';
+
         % AM_WF_off cells
             elseif self.name == "AM_WF_off"
                 self.C_m = 50*pF;
@@ -166,6 +177,7 @@ classdef Cell < handle
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 391;
+                self.color = 'g';
         % AM_NF_on cells
             elseif self.name == "AM_NF_on"
                 self.C_m = 50*pF;
@@ -185,6 +197,7 @@ classdef Cell < handle
                 self.z_min = 80*um;
                 self.z_max = 101*um;
                 self.n = 721;
+                self.color = 'g';
             
         % GL_on cells
             elseif self.name == "GL_on"
@@ -206,6 +219,7 @@ classdef Cell < handle
                 self.z_min = 25*um;
                 self.z_max = 39*um;
                 self.n = 721;
+                self.color = 'm';
             
         % GL_off cells
             elseif self.name == "GL_off"
@@ -220,13 +234,14 @@ classdef Cell < handle
                 self.g_max = [2.5*nS,2.5*nS,2.0*nS];
                 self.V_50 = [-44*mV,-34.4*mV, -47.5*mV];
                 self.beta = [3*mV,2.5*mV, 2.0*mV];
-                self.type = ["I","I"];
+                self.type = ["I","I","I"];
 
                 self.lambda = 6*um;
                 self.sigma = 6*um;
                 self.z_min = 25*um;
                 self.z_max = 39*um;
                 self.n = 721;
+                self.color = 'm';
             end
         end
     end
