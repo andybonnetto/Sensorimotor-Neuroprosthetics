@@ -5,7 +5,6 @@ classdef M < handle
     G_m
     tau_rest
     E_rest
-    E_T
 
     E_syn
     g_min
@@ -62,14 +61,14 @@ classdef M < handle
             M.G_m = sparse(M.N_cells,1);
             M.tau_rest = sparse(M.N_cells,1);
             M.E_rest = sparse(M.N_cells,1);
-            M.V_m = zeros(M.N_cells,Constants.t_size);
+            M.V_m = zeros(M.N_cells);
 
             M.g_min = zeros(M.N_cells,M.N_types,M.N_syn);
             M.g_max = zeros(M.N_cells,M.N_types,M.N_syn);
-            M.g_syn =  zeros(M.N_cells,M.N_types,M.N_syn, Constants.t_size);
+            M.g_syn =  zeros(M.N_cells,M.N_types,M.N_syn);
             M.V_50 = zeros(M.N_cells, M.N_types, M.N_syn);
             M.beta = zeros(M.N_cells, M.N_types, M.N_syn);
-            M.Gsyn = zeros(M.N_cells, M.N_types, Constants.t_size);
+            M.Gsyn = zeros(M.N_cells, M.N_types);
             M.V_pre = zeros(M.N_cells, M.N_types, M.N_syn);
             M.D = zeros(M.N_cells, M.N_types, M.N_syn);
             M.sigma = zeros(M.N_cells, M.N_types, M.N_syn);
@@ -138,8 +137,19 @@ classdef M < handle
             end    
         end
 
-        function M = update_V_pre(M,t)
-            M.V_pre(:,:,:) = repmat(M.V_m(:,t-1),1,M.N_types,M.N_syn);
+        function M = add_light_syn(M,L)
+            % L of size N_cells (Constant image)
+            % Import L(t) from file to be consistant with t sized matrices
+            import Cell.*
+            cones = M.names == "CR";
+            gmax = Cell("CR",[0,0,0]).g_max(1);
+            gmin = Cell("CR",[0,0,0]).g_min(1);
+            L_max = 1;
+            M.Gsyn(cones) = gmin*ones(1,sum(cones)) + (gmax-gmin)*(L_max - L(cones)) ;
+        end
+
+        function M = update_V_pre(M)
+            M.V_pre(:,:,:) = repmat(M.V_m(:),1,M.N_types,M.N_syn);
         end
     end
 end

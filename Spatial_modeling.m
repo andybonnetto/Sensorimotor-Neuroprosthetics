@@ -1,4 +1,4 @@
-function Spatial_modeling()
+function Spatial_modeling(vis)
     import Cell.*
     % Spatial Modeling
 
@@ -13,13 +13,14 @@ function Spatial_modeling()
     n = [4105,537,1741,1741,391,391,721,721,721];
     
     % Attribute one position to each cell and visualize the layers
-    cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um);
+    cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um,vis);
     
     %Save cell_pos in a mat file
     save_pos(cell_pos)
 
     % Redefine the number of cells for each population
     n = [4225,529,1681,1681,361,361,729,729,729];
+    assignin("base","n_CR",n(1));
 
     % Create a list with each cell properties and xyz position
     cell_list = create_list(cell_pos,n);
@@ -52,7 +53,7 @@ function p = lattice_generation(size, spacing, sigma, noise)
 end
 
 %%%%% Function cell_pos %%%%%
-function cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um)
+function cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um,vis)
 
     % CR cells matrix
     CR_pos = unique_pos(noise,lambda,sigma,z_min,z_max,n,1);
@@ -80,9 +81,11 @@ function cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um)
 
     % GL_off cells matrix
     GL_off_pos = unique_pos(noise,lambda,sigma,z_min,z_max,n,9);
-
+    
     cell_pos = vertcat(CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos);
-    plot_layers(cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um);
+    if vis
+        plot_layers(cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um);
+    end
 end
 
 %%%%% Function position %%%%%
@@ -695,12 +698,11 @@ function visualize_connection_syn(cell_list,um,index)
 end
 
 function save_cell_list(cell_list)
-    save('Spatial_model_cell_list','cell_list')
+%     save('Spatial_model_cell_list','cell_list')
     assignin("base","cell_list",cell_list)
-
 end
 
 function save_pos(mat)
-    save("3Dpos","mat")
+%     save("3Dpos","mat")
     assignin("base", "mat3D", mat);
 end
