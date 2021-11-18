@@ -61,7 +61,7 @@ classdef M < handle
             M.G_m = sparse(M.N_cells,1);
             M.tau_rest = sparse(M.N_cells,1);
             M.E_rest = sparse(M.N_cells,1);
-            M.V_m = zeros(M.N_cells);
+            M.V_m = zeros(M.N_cells,Constants.t_size);
 
             M.g_min = zeros(M.N_cells,M.N_types,M.N_syn);
             M.g_max = zeros(M.N_cells,M.N_types,M.N_syn);
@@ -91,6 +91,7 @@ classdef M < handle
             % Fill matrices with values from cell_list
             i = 1;
             for cell = cell_list
+%                 disp(num2str(i))
                 M.names(i) = cell.name;
                 M.C_m(i) = cell.C_m;
                 M.G_m(i) = cell.G_m;
@@ -148,8 +149,11 @@ classdef M < handle
             M.Gsyn(cones) = gmin*ones(1,sum(cones)) + (gmax-gmin)*(L_max - L(cones)) ;
         end
 
-        function M = update_V_pre(M)
-            M.V_pre(:,:,:) = repmat(M.V_m(:),1,M.N_types,M.N_syn);
+        function M = update_V_pre(M,t)
+            if t-Constants.time_coeff < 1
+                t = Constants.time_coeff+1;
+            end
+            M.V_pre(:,:,:) = repmat(M.V_m(:,t-Constants.time_coeff),1,M.N_types,M.N_syn);
         end
     end
 end

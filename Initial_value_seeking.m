@@ -1,6 +1,5 @@
-function M_cells = Initial_value_seeking(cell_list,L,M_init,pfile)
+function M_cells = Initial_value_seeking(cell_list,L,M_init,pfile,n_sim)
     import Temporal_modeling_matrix.*
-    n_sim = 50;
     V_m_init = zeros(size(cell_list,2),n_sim);
     V_m_init_0 = zeros(size(cell_list,2),n_sim);
 %     target_cell = 11000;
@@ -12,7 +11,7 @@ function M_cells = Initial_value_seeking(cell_list,L,M_init,pfile)
             [M_cells,V_0] = Temporal_modeling_matrix(cell_list,{[],[]},L,pfile);              
         end
         V_m_init_0(:,i) = V_0;
-        V_m_init(:,i) = M_cells.V_m(:);
+        V_m_init(:,i) = M_cells.V_m(:,end);
     end
 
     assignin("base","V_m_init_0",V_m_init_0)

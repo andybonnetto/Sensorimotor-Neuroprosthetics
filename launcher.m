@@ -1,5 +1,6 @@
 clear variables; clc; close all
 recycle on
+k = 1;
 pfolder = "C:\Users\andyb\Documents\results\";
 pfile = strcat(pfolder,"test1.txt");
 disp("Spatial modeling...")
@@ -10,21 +11,31 @@ n_tot = size(cell_list,2);
 mode = "full-0";
 L = light_to_cells(mat3D,n_CR,n_tot,mode,0);
 disp("Sanitity check and initial matrice generation...")
-Temporal_modeling_matrix(cell_list,{[],[]},L,pfile);
+[M_cells,V_0] = Temporal_modeling_matrix(cell_list,{[],[]},L,pfile);
 
 %% 
 pfile = strcat(pfolder,"test2.txt");
 disp("Find initial value for V_m...")
-Initial_value_seeking(cell_list,L,M_init,pfile);
-Read_V_m_file(pfile, outputstr)
+n_sim = 2;
+Initial_value_seeking(cell_list,L,M_init,pfile,n_sim);
+Read_V_m_file(pfile, outputstr,n_tot)
+
+%% 
+c = 1355;
+k = 1;
+f = figure(k);
+plot(M_cells.V_m(c,:))
+title(strcat("Cell ", num2str(c)))
+xlabel("Time")
+ylabel("V_m (V)")
 
 %% 
 
 cell_vis = [randi([1,4225],1),randi([4225,4754],1),randi([4754,6435],1),randi([6435,8116],1),randi([8116,8477],1), randi([8477,8838],1), randi([8838,9567],1),randi([9567,10296],1), randi([10296,11025],1)];
-k = 1;
+k = k+1;
 for c = cell_vis
     f = figure(k);
-    for i = 1:size(V_m_init,2)    
+    for i = 1:n_sim   
         plot([V_m_init_0(c,i), V_m_init(c,i)])
         hold on
     end
@@ -32,7 +43,7 @@ for c = cell_vis
     title(strcat("Convergence for cell ", num2str(c)))
     set(gca,'xtick', [1,2],'xticklabel',["Initial value", "Final value"])
     ylabel("V_m (V)")
-    saveas(gcf,strcat("C:\Users\andyb\OneDrive\EPFL\MA3\Sensorymotor neuroprosthetics\Results\","Convergence_cell_",num2str(c),"sim",num2str(size(V_m_init,2)),".png"))
+    saveas(gcf,strcat("C:\Users\andyb\OneDrive\EPFL\MA3\Sensorymotor neuroprosthetics\Results\","Convergence_cell_",num2str(c),"sim",num2str(n_sim),".png"))
     k = k+1;
 end
 %% 
@@ -51,7 +62,7 @@ ylabel('V_m [V]')
 disp("Control test with initial values")
 pfile = strcat(pfolder,"test_control.txt");
 Temporal_modeling_matrix(cell_list,{M_init,V_m_init(:,1)},L,pfile)
-Read_V_m_file(pfile,outputstr)
+Read_V_m_file(pfile,outputstr,n_tot)
 k = k+1;
 for c = cell_vis
     f = figure(k);
@@ -80,7 +91,7 @@ for mode = mode_list
     L = light_to_cells(mat3D,n_CR,n_tot,mode,0);
     pfile = strcat(pfolder,"test_",mode,".txt");
     Temporal_modeling_matrix(cell_list,{M_init,V_m_init(:,1)},L,pfile);
-    Read_V_m_file(pfile,outputstr);
+    Read_V_m_file(pfile,outputstr,n_tot);
     n_sim = size(V_m_init,2);
     scatter(1:1:M_cells.N_cells,V_m(:,end),'.')
     hold on
