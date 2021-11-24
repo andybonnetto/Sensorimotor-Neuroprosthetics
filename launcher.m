@@ -8,10 +8,21 @@ Spatial_modeling(0)
 %% 
 disp("Declare Light protocol...")
 n_tot = size(cell_list,2);
-mode = "full-0";
+mode = "full-1";
 L = light_to_cells(mat3D,n_CR,n_tot,mode,0);
 disp("Sanitity check and initial matrice generation...")
+c1 = clock;
 [M_cells,V_0] = Temporal_modeling_matrix(cell_list,{[],[]},L,pfile);
+c2 = clock;
+duration = c2-c1;
+%%
+c = 8650;
+k = 1;
+f = figure(k);
+plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(c,:))
+title(strcat("Cell ", num2str(c)))
+xlabel("Time")
+ylabel("V_m (V)")
 
 %% 
 pfile = strcat(pfolder,"test2.txt");
@@ -20,14 +31,7 @@ n_sim = 2;
 Initial_value_seeking(cell_list,L,M_init,pfile,n_sim);
 Read_V_m_file(pfile, outputstr,n_tot)
 
-%% 
-c = 1355;
-k = 1;
-f = figure(k);
-plot(M_cells.V_m(c,:))
-title(strcat("Cell ", num2str(c)))
-xlabel("Time")
-ylabel("V_m (V)")
+
 
 %% 
 

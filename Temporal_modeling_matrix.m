@@ -43,11 +43,10 @@ function [M_cells,V_0] = Temporal_modeling_matrix(cell_list,init,L,pfile)
 %     fprintf(fid,outputstr, M_cells.V_m.');
     w = waitbar(0, "Please wait...");
     for t = 2:Constants.t_size
-        waitbar(t/Constants.t_size,w,"Update your V_m...")
+        waitbar(double(t)/double(Constants.t_size),w,"Update your V_m...")
         M_cells = get_Gsyn(M_cells,L,t);
-        [M_cells,V_s] = update_V_m(M_cells,t);
+        M_cells = update_V_m(M_cells,t);
 %         fprintf(fid,outputstr, M_cells.V_m.');
-%         fprintf(fsid,outputstr_s,V_s.');
 %         S = get_firing_rate(M_cells,t);
     end
     close(w);
@@ -86,15 +85,14 @@ function M_cells = get_Gsyn(M_cells,L,t)
     end
 end
 
-function [M_cells,V_s] = update_V_m(M_cells,t)
+function M_cells = update_V_m(M_cells,t)
 
     G_tot = M_cells.G_m + sum(M_cells.Gsyn(:,:),2);
     tau_m = M_cells.C_m ./ G_tot;
     dt = Constants.time_step;
     I = ones(M_cells.N_cells,1);
-    V_s = I ./ G_tot .* (M_cells.G_m .* M_cells.E_rest + M_cells.Delta_Ve(:,t) .* M_cells.G_m + sum(M_cells.Gsyn(:,:) .* M_cells.E_syn,2));
-    assignin("base","V_s",V_s);
-    dV = (-(repmat(dt,M_cells.N_cells,1))./tau_m).*M_cells.V_m(:,t) + (repmat(dt,M_cells.N_cells,1)./tau_m).*V_s;
+    M_cells.V_S(:,t) = I ./ G_tot .* (M_cells.G_m .* M_cells.E_rest + M_cells.Delta_Ve(:,t) .* M_cells.G_m + sum(M_cells.Gsyn(:,:) .* M_cells.E_syn,2));
+    dV = (-(repmat(dt,M_cells.N_cells,1))./tau_m).*M_cells.V_m(:,t) + (repmat(dt,M_cells.N_cells,1)./tau_m).*M_cells.V_S(:,t);
     M_cells.V_m(:,t+1) =  dV + M_cells.V_m(:,t) ;
 end
 

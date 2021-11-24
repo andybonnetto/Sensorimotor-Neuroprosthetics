@@ -27,6 +27,7 @@ classdef M < handle
     sigma
     IorD
     V_pre
+    V_S
     D
 
 
@@ -62,6 +63,7 @@ classdef M < handle
             M.tau_rest = sparse(M.N_cells,1);
             M.E_rest = sparse(M.N_cells,1);
             M.V_m = zeros(M.N_cells,Constants.t_size);
+            M.V_S = zeros(M.N_cells,Constants.t_size);
 
             M.g_min = zeros(M.N_cells,M.N_types,M.N_syn);
             M.g_max = zeros(M.N_cells,M.N_types,M.N_syn);
