@@ -13,13 +13,6 @@ classdef M < handle
     beta
     g_syn
 
-    E_syn2
-    g_min2
-    g_max2
-    V_502
-    beta2
-    g_syn2
-
     types
     Gsyn
     V_m
@@ -29,6 +22,7 @@ classdef M < handle
     V_pre
     V_S
     D
+    pre_syn_mat
 
 
     N_types
@@ -42,10 +36,10 @@ classdef M < handle
         function M = M(cell_list)
             import Constants.*
 
-            M.types = ["Light-CR","CR-HRZ","HRZ-CR","CR-BP_on","CR-BP_off", "BP_on-AM_WF_on", "BP_off-AM_WF_off", "BP_on-AM_NF_on", "AM_WF_on-GL_on", "AM_WF_off*-GL_off", "AM_NF_off-GL_on","BP_on-GL_on","BP_off-GL_off"];
+            M.types = ["Light-CR","CR-HRZ","HRZ-CR","CR-BP_on","CR-BP_off", "BP_on-AM_WF_on", "BP_off-AM_WF_off", "BP_on-AM_NF_on", "AM_WF_on-GL_on", "AM_WF_off*-GL_off", "AM_NF_on-GL_off","BP_on-GL_on","BP_off-GL_off"];
             M.IorD = [repmat("I", 1, size(M.types,2))];
             M.IorD(1) = "D"; M.IorD(4) = "D";
-            M.indices = [2,1,2,1,1,1,1,1,2,2,2,1,1];
+            M.indices = [1,1,2,1,1,1,1,1,2,2,3,1,1];
             M.indices = gpuArray(M.indices);
             
             M.N_types = size(M.types,2);
@@ -65,25 +59,21 @@ classdef M < handle
             M.V_m = zeros(M.N_cells,Constants.t_size);
             M.V_S = zeros(M.N_cells,Constants.t_size);
 
-            M.g_min = zeros(M.N_cells,M.N_types,M.N_syn);
-            M.g_max = zeros(M.N_cells,M.N_types,M.N_syn);
-            M.g_syn =  zeros(M.N_cells,M.N_types,M.N_syn);
-            M.V_50 = zeros(M.N_cells, M.N_types, M.N_syn);
-            M.beta = zeros(M.N_cells, M.N_types, M.N_syn);
-            M.Gsyn = zeros(M.N_cells, M.N_types);
+            M.g_syn =  zeros(M.N_cells, M.N_types, M.N_syn);
+            M.V_50 = zeros(M.N_types,1);
+            M.beta = zeros(M.N_types,1);
+            M.g_min = zeros(M.N_types,1);
+            M.g_max = zeros(M.N_types,1);
+            M.Gsyn = sparse(M.N_cells, M.N_types);
             M.V_pre = zeros(M.N_cells, M.N_types, M.N_syn);
-            M.D = zeros(M.N_cells, M.N_types, M.N_syn);
+            M.D = Inf(M.N_cells, M.N_types, M.N_syn);
             M.sigma = zeros(M.N_cells, M.N_types, M.N_syn);
             M.Delta_Ve = zeros(M.N_cells,Constants.t_size);
 
-            M.g_min2 = zeros(M.N_cells,M.N_types,M.N_syn,2);
-            M.E_syn2 = zeros(M.N_cells,M.N_types,2);
-            M.g_max2 = zeros(M.N_cells,M.N_types,M.N_syn,2);
-            M.g_syn2 =  zeros(M.N_cells,M.N_types,M.N_syn);
-            M.V_502 = zeros(M.N_cells, M.N_types, M.N_syn,2);
-            M.beta2 = ones(M.N_cells, M.N_types, M.N_syn,2);
+            M.pre_syn_mat = zeros(M.N_cells,M.N_types,M.N_syn);
+            M.E_syn = zeros(M.N_types,1);
+
             M = M.fill_with_cell_list(cell_list);
-            M.E_syn =  sparse(M.E_syn2(:,:,1) + M.E_syn2(:,:,2));
             
         end
             
@@ -91,6 +81,19 @@ classdef M < handle
             
         function M = fill_with_cell_list(M, cell_list)
             % Fill matrices with values from cell_list
+            import Cell.*
+            
+            j = 1;
+            for type = M.types
+                post_syn_type = split(type, "-");
+                post_syn_cell = Cell(post_syn_type(2),[0,0,0]);
+                M.g_min(j) = post_syn_cell.g_min(M.indices(j));
+                M.g_max(j) = post_syn_cell.g_max(M.indices(j));
+                M.V_50(j) = post_syn_cell.V_50(M.indices(j));
+                M.beta(j) = post_syn_cell.beta(M.indices(j));
+                M.E_syn(j) = post_syn_cell.E_syn(M.indices(j));
+                j = j+1;
+            end
             i = 1;
             for cell = cell_list
 %                 disp(num2str(i))
@@ -102,34 +105,14 @@ classdef M < handle
                 M.sigma(i,:,:) = repmat(cell.sigma, M.N_types, M.N_syn);
                 
                 j = 1;
-                N_s = size(cell.pre_syn_subset,2);
                 for type = M.types
                     post_syn_type = split(type, "-");
                     if cell.name == post_syn_type(2)
-                        if M.IorD(j) == "I"
-                            if cell.type(M.indices(j)) == "I"
-                                M.E_syn2(i,j,1)= cell.E_syn(M.indices(j));
-
-                                M.g_min2(i,j,1:N_s,1) = cell.g_min(M.indices(j))*ones(1,N_s);
-                                M.g_max2(i,j,1:N_s,1) = cell.g_max(M.indices(j))*ones(1,N_s);
-                                M.V_502(i,j,1:N_s,1) = cell.V_50(M.indices(j))*ones(1,N_s);
-                                M.beta2(i,j,1:N_s,1) = cell.beta(M.indices(j))*ones(1,N_s);
-                            end
-        
-                        else
-                            if cell.type(M.indices(j)) == "D"
-                                M.E_syn2(i,j,2) = cell.E_syn(M.indices(j));
-        
-                                M.g_min2(i,j,1:N_s,2) = cell.g_min(M.indices(j))*ones(1,N_s);
-                                M.g_max2(i,j,1:N_s,2) = cell.g_min(M.indices(j))*ones(1,N_s);
-                                M.V_502(i,j,1:N_s,2) = cell.V_50(M.indices(j))*ones(1,N_s);
-                                M.beta2(i,j,1:N_s,2) = cell.beta(M.indices(j))*ones(1,N_s);
-                            end
-                        end
                         k = 1;
                         for pre_syn = cell.pre_syn_subset
                             if cell_list(pre_syn).name == post_syn_type(1)
                                 M.D(i,j,k) = cell.dist_pre_syn_subset(k);
+                                M.pre_syn_mat(i,j,k) = cell.pre_syn_subset(k);
                                 k = k +1;
                             end
                         end
@@ -148,14 +131,18 @@ classdef M < handle
             gmax = Cell("CR",[0,0,0]).g_max(1);
             gmin = Cell("CR",[0,0,0]).g_min(1);
             L_max = 1;
-            M.Gsyn(cones) = gmin*ones(1,sum(cones)) + (gmax-gmin)*(L_max - L(cones)) ;
+            M.g_syn(cones,1,:) = repmat(gmin*(1-(L_max - L)) + gmax*(L_max - L),1,M.N_syn);
+            M.D(cones,1,:) = 0;
         end
 
         function M = update_V_pre(M,t)
             if t-Constants.time_coeff < 1
                 t = Constants.time_coeff+1;
             end
-            M.V_pre(:,:,:) = repmat(M.V_m(:,t-Constants.time_coeff),1,M.N_types,M.N_syn);
+%             M.V_pre = repmat(M.V_m(:,t-Constants.time_coeff),1,M.N_types,M.N_syn);
+            not_zero = not(M.pre_syn_mat == 0);
+            M.V_pre = -Inf(M.N_cells, M.N_types, M.N_syn);
+            M.V_pre(not_zero) = M.V_m(M.pre_syn_mat(not_zero),t-Constants.time_coeff);
         end
     end
 end

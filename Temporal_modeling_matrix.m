@@ -1,12 +1,16 @@
-function [M_cells,V_0] = Temporal_modeling_matrix(cell_list,init,L,pfile)
+function M_cells = Temporal_modeling_matrix(cell_list,init,L)
+% Run the temporal modeling of cells in cell_list by converting into
+% matrix of class M and running differential equations from Cottaris 2005.
+% Simulation parameters are stored in Constants.m structure.
+% Input : cell_list : struct of cell classes with spatial informations
+%         init : {[M_init,V_m_init]}, if cell_list to matrice conversion
+%         already done, can skip initial steps by using M_init; If resting
+%         voltage already known, can use V_init
+% Output : M_cells :  struc of matrices with temporal variables such as
+% membrane potential V_m(t) or Firing rate of ganglion cells S(t)
+
     import M.*
     import Constants.*
-    
-%     if nargin < 4
-%         path_to_file = "C:\Users\andyb\Documents\results\test.txt";
-%     else
-%         path_to_file = pfile;
-%     end
 
     if nargin < 2
         M_init = [];
@@ -24,80 +28,87 @@ function [M_cells,V_0] = Temporal_modeling_matrix(cell_list,init,L,pfile)
         M_cells = M_init;
     end
 
-%     delete(path_to_file)
-%     fid = fopen(path_to_file, 'a');
-%     fsid = fopen(strcat(path_to_file,"_V_s"), 'a');
-    mrows = M_cells.N_cells;
-    ncols = Constants.time_coeff;
-%     outputstr_s = ['%' num2str(mrows) 'f']; % template for the string, you put your datatype here
-%     outputstr = repmat(outputstr_s, 1, ncols); % replicate it to match the number of columns
-%     outputstr = [outputstr '\n']; % add a new line if you want
-%     assignin("base","outputstr",outputstr)
-%     assignin("base", 'outputstr_s',outputstr)
-
     if isempty(V_m_init)
-        [M_cells,V_0] = initialization(M_cells);
+        M_cells = initialization(M_cells);
     else
-        [M_cells,V_0] = initialization(M_cells,V_m_init);
+        M_cells = initialization(M_cells,V_m_init);
     end
-%     fprintf(fid,outputstr, M_cells.V_m.');
     w = waitbar(0, "Please wait...");
-    for t = 2:Constants.t_size
+    for t = 1:Constants.t_size
         waitbar(double(t)/double(Constants.t_size),w,"Update your V_m...")
         M_cells = get_Gsyn(M_cells,L,t);
         M_cells = update_V_m(M_cells,t);
-%         fprintf(fid,outputstr, M_cells.V_m.');
-%         S = get_firing_rate(M_cells,t);
+    end
+    if isempty(V_m_init)
+        V_m_init = M_cells.V_S(:,end);
     end
     close(w);
-%     fclose(fid);
+    assignin("base","V_m_init",V_m_init)
     assignin("base","M_cells",M_cells)
 
-%     scatter(1:4225,S{1}(2))
 end
 
-function [M_cells,V_0] = initialization(M_cells,V_m_init)
+function M_cells = initialization(M_cells,V_m_init)
+% Membrane potential initialization for t = 0, if initial values not
+% specied, generates random values.
     if nargin < 2
-%         M_cells.V_m = rand(M_cells.N_cells,1)*(-100e-3);
-        M_cells.V_m = ones(M_cells.N_cells,Constants.t_size)*(-50e-3);
+        M_cells.V_m = ones(M_cells.N_cells,Constants.t_size)*(-30e-3);
+%         M_cells.V_m = rand(M_cells.N_cells, Constants.t_size)*(-100e-3);
     else
-        M_cells.V_m = V_m_init;
+        M_cells.V_m(:,1) = V_m_init;
     end
-    V_0 = M_cells.V_m;
+
 %     M_cells.Delta_Ve = ones(M_cells.N_cells,Constants.t_size)*(100e-3);
 end
 
 function M_cells = get_Gsyn(M_cells,L,t)
+% Compute Gsyn at time t for light protocol L.
+   
+%     X1 = (M_cells.V_pre - M_cells.V_502(:,:,:,1))./M_cells.beta2(:,:,:,1);
+%     X2 = (M_cells.V_pre - M_cells.V_502(:,:,:,2))./M_cells.beta2(:,:,:,2);
+%     I = ones(size(X1));
+%     M_cells.g_syn2(:,:,:,1) = M_cells.g_min2(:,:,:,1) + (M_cells.g_max2(:,:,:,1) - M_cells.g_min2(:,:,:,1)).*(I-I./(I+exp(X1)));
+%     M_cells.g_syn2(:,:,:,2) = M_cells.g_min2(:,:,:,2) + (M_cells.g_max2(:,:,:,2) - M_cells.g_min2(:,:,:,2)).*(I./(I+exp(X2)));
+%     M_cells.g_syn(:,:,:) = M_cells.g_syn2(:,:,:,1) + M_cells.g_syn2(:,:,:,2);
+    
+
     M_cells = M_cells.update_V_pre(t);
-    X1 = (M_cells.V_pre - M_cells.V_502(:,:,:,1))./M_cells.beta2(:,:,:,1);
-    X2 = (M_cells.V_pre - M_cells.V_502(:,:,:,2))./M_cells.beta2(:,:,:,2);
-    I = ones(size(X1));
-    M_cells.g_syn2(:,:,:,1) = M_cells.g_min2(:,:,:,1) + (M_cells.g_max2(:,:,:,1) - M_cells.g_min2(:,:,:,1)).*(I-I./(I+exp(X1)));
-    M_cells.g_syn2(:,:,:,2) = M_cells.g_min2(:,:,:,2) + (M_cells.g_max2(:,:,:,2) - M_cells.g_min2(:,:,:,2)).*(I./(I+exp(X2)));
-    M_cells.g_syn(:,:,:) = M_cells.g_syn2(:,:,:,1) + M_cells.g_syn2(:,:,:,2);
-    
-    W = sum(exp(-M_cells.D ./ M_cells.sigma),3);
-    I = ones(size(W));
-    M_cells.Gsyn(:,:) = I./W .* sum(M_cells.g_syn(:,:,:) .* exp(-M_cells.D ./ M_cells.sigma),3);
-    
-    if nargin > 1
-        M_cells = M_cells.add_light_syn(L);
+    M_cells = M_cells.add_light_syn(L(:,t));
+    i = 2;
+    for type = M_cells.types(2:end)
+
+        syns = split(type, '-');
+        population = M_cells.names == syns(2);
+
+        E = 1./(1+exp((M_cells.V_pre(population,i,:)-M_cells.V_50(i))/(M_cells.beta(i))));
+        if M_cells.IorD(i) == "I"
+            M_cells.g_syn(population,i,:) = M_cells.g_min(i)*(E)+ M_cells.g_max(i)*(1-E);
+        else
+            M_cells.g_syn(population,i,:) = M_cells.g_min(i)*(1-E) + M_cells.g_max(i)*E;
+        end
+        i = i+1;
     end
+%     cones = M_cells.names == "CR";
+    W = sum(exp(-M_cells.D ./ M_cells.sigma),3);
+    not_zero = not(W==0);
+    S = sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
+    M_cells.Gsyn(not_zero) = (1./W(not_zero)) .* S(not_zero);
+%     M_cells.Gsyn(cones,:) = sum(M_cells.g_syn(cones,:,:),3);
 end
 
 function M_cells = update_V_m(M_cells,t)
-
-    G_tot = M_cells.G_m + sum(M_cells.Gsyn(:,:),2);
+% Update membrane potential V_m[t+1] from Gsyn and V_m at time t
+    G_tot = M_cells.G_m + sum(M_cells.Gsyn,2);
     tau_m = M_cells.C_m ./ G_tot;
     dt = Constants.time_step;
-    I = ones(M_cells.N_cells,1);
-    M_cells.V_S(:,t) = I ./ G_tot .* (M_cells.G_m .* M_cells.E_rest + M_cells.Delta_Ve(:,t) .* M_cells.G_m + sum(M_cells.Gsyn(:,:) .* M_cells.E_syn,2));
-    dV = (-(repmat(dt,M_cells.N_cells,1))./tau_m).*M_cells.V_m(:,t) + (repmat(dt,M_cells.N_cells,1)./tau_m).*M_cells.V_S(:,t);
+    diag_E_syn = diag(M_cells.E_syn,0);
+    M_cells.V_S(:,t) = (1 ./ G_tot) .* (M_cells.G_m .* M_cells.E_rest + 0.5*M_cells.Delta_Ve(:,t) .* M_cells.G_m + sum(M_cells.Gsyn*diag_E_syn,2));
+    dV = (-dt./tau_m).*M_cells.V_m(:,t) + (dt./tau_m).*M_cells.V_S(:,t);
     M_cells.V_m(:,t+1) =  dV + M_cells.V_m(:,t) ;
 end
 
 function S = get_firing_rate(M_cells,t)
-    
+% Calculate ganglion cells firing rates at time t based on V_m([t]
     names = ["GL_on", "GL_off"];
     DV_0 = 5e-3;
     i = 1;

@@ -3,11 +3,12 @@ function Spatial_modeling(vis)
     % Spatial Modeling
 
     % Parameters
-    noise = 1;
     um = 1e-6;
     lambda = [2.5,7,3.85,3.85,8,8,6,6,6].*um;
+     %1;
 %     sigma = [2.5,10.5,3.85,3.85,24,24,6,6,6].*um;
-    sigma = [2.5,0.4*10.5,3.85,3.85,24,24,6,6,6].*um;
+    sigma = [2.5,10.5,3.85,3.85,24,24,6,6,6].*um;
+    noise = sigma/4.5/um;
     z_min = [170,100,100,100,80,80,80,25,25].*um;
     z_max = [205,128,128,128,101,101,101,39,39].*um;
     n = [4105,537,1741,1741,391,391,721,721,721];
@@ -43,7 +44,7 @@ function p = lattice_generation(size, spacing, sigma, noise)
     for i = size
         for j = size
             param = [i,j];
-            n = noise*normrnd([0,0],sigma);
+            n = noise*normrnd([0,0],sigma/3);
             K = vertcat(K, param);
             N = vertcat(N,n);
         end
@@ -84,7 +85,7 @@ function cell_pos = create_pos(noise,lambda,sigma,z_min,z_max,n,um,vis)
     
     cell_pos = vertcat(CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos);
     if vis
-        plot_layers(cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um);
+        plot_layers(sigma,cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um);
     end
 end
 
@@ -93,7 +94,7 @@ function position = unique_pos(noise,lambda,sigma,z_min,z_max,n,i)
 
     size_matrix = sqrt(n(i));
     index = -floor(size_matrix/2):floor(size_matrix/2);
-    xy = lattice_generation(index,lambda(i),sigma(i),noise);
+    xy = lattice_generation(index,lambda(i),sigma(i),noise(i));
     n_matrix = size(index,2)^2;
     z = z_min(i) + (z_max(i)-z_min(i)).*rand(n_matrix,1);
     position = horzcat(xy,z);
@@ -101,9 +102,9 @@ function position = unique_pos(noise,lambda,sigma,z_min,z_max,n,i)
 end
 
 %%%%% Function visualization_pos %%%%%
-function visualization_pos = plot_layers(cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um)
-
-    figure(1)
+function plot_layers(sigma,cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos,GL_off_pos,um)
+    ALL_pos = {CR_pos,HRZ_pos,BP_on_pos,BP_off_pos,AM_WF_on_pos,AM_WF_off_pos,AM_NF_on_pos,GL_on_pos, GL_off_pos};
+    figure()
     xlim([-200*um 200*um])
     ylim([-400*um 400*um])
     zlim([0*um 210*um])
@@ -129,38 +130,19 @@ function visualization_pos = plot_layers(cell_pos,CR_pos,HRZ_pos,BP_on_pos,BP_of
     zlabel('z-axis [µm]')
     legend('CR', 'HRZ', 'BP', 'AM', 'GL')
 
-%     figure(2)
-%     xlim([-200*um 200*um])
-%     zlim([0*um 210*um])
-%     plot(cell_pos(:,1)/um,cell_pos(:,3)/um,'o','MarkerEdgeColor','k','MarkerFaceColor',[200,200,200]/255);
-%     xlabel('x-axis [µm]')
-%     ylabel('z-axis [µm]')
-%     title("Vertical plan")
-
-    figure(3)
-    xlim([-150*um 150*um])
-    ylim([-150*um 150*um])
-    curunits = get(gca, 'Units');
-    set(gca, 'Units', 'Points');
-    cursize = get(gca, 'Position');
-    set(gca, 'Units', curunits);
-    plot(HRZ_pos(:,1)/um,HRZ_pos(:,2)/um,'o','Color','k','MarkerSize',7*um*cursize(3)/(150*um));
-    xlabel('x-axis [µm]')
-    ylabel('y-axis [µm]')
-    title("Horizontal cells")
-
-%     figure(4)
-%     xlim([-150*um 150*um])
-%     ylim([-150*um 150*um])
-%     curunits = get(gca, 'Units');
-%     set(gca, 'Units', 'Points');
-%     cursize = get(gca, 'Position');
-%     set(gca, 'Units', curunits);
-%     plot(GL_on_pos(:,1)/um,GL_on_pos(:,2)/um,'o','Color','k','MarkerSize',4.2*um*cursize(3)/(150*um));
-%     xlabel('x-axis [µm]')
-%     ylabel('y-axis [µm]')
-%     title("Ganglion cells")
-
+    names = ["CR","HRZ","BP_on","BP_off","AM_WF_on","AM_WF_off","AM_NF_on","GL_on","GL_off"];
+    
+    figure()
+    k = 1;
+    for name = names
+        subplot(3, 3, k)
+        viscircles(ALL_pos{k}(:,1:2), ones(size(ALL_pos{k},1),1) * sigma(k), 'LineWidth', 0.5, 'Color', 'k');
+        xlim([-100e-6, 100e-6])
+        ylim([-100e-6, 100e-6])
+        title(name)
+        axis equal
+        k = k+1;
+    end
 end
 
 %%%%% Function cell_list %%%%%
@@ -246,7 +228,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = euclidian_distance(z,z0);
-            if dist_xy<sigma(1) && dist_z<z_extent
+            if dist_xy<sigma(1)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -268,7 +250,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(2) && dist_z<z_extent
+            if dist_xy<sigma(2)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -290,7 +272,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(3) && dist_z<z_extent
+            if dist_xy<sigma(3)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -308,7 +290,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(3) && dist_z<z_extent
+            if dist_xy<sigma(3)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -325,7 +307,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(3) && dist_z<z_extent
+            if dist_xy<sigma(3)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -342,7 +324,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(3) && dist_z<z_extent
+            if dist_xy<sigma(3)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -364,7 +346,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(4) && dist_z<z_extent
+            if dist_xy<sigma(4)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -382,7 +364,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(4) && dist_z<z_extent
+            if dist_xy<sigma(4)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -400,7 +382,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(4) && dist_z<z_extent
+            if dist_xy<sigma(4)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -422,7 +404,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(5) && dist_z<z_extent
+            if dist_xy<sigma(5)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -440,7 +422,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(5) && dist_z<z_extent
+            if dist_xy<sigma(5)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -462,7 +444,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(6) && dist_z<z_extent
+            if dist_xy<sigma(6)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -480,7 +462,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(6) && dist_z<z_extent
+            if dist_xy<sigma(6)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -502,7 +484,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(7) && dist_z<z_extent
+            if dist_xy<sigma(7)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -520,7 +502,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(7) && dist_z<z_extent
+            if dist_xy<sigma(7)*3 && dist_z<z_extent
                 cell_list(i).post_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -542,7 +524,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(8) && dist_z<z_extent
+            if dist_xy<sigma(8)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -559,7 +541,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(8) && dist_z<z_extent
+            if dist_xy<sigma(8)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -581,7 +563,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(9) && dist_z<z_extent
+            if dist_xy<sigma(9)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -598,7 +580,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(9) && dist_z<z_extent
+            if dist_xy<sigma(9)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
@@ -615,7 +597,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(9) && dist_z<z_extent
+            if dist_xy<sigma(9)*3 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
