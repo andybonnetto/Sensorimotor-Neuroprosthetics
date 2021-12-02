@@ -36,6 +36,9 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L)
     w = waitbar(0, "Please wait...");
     for t = 1:Constants.t_size
         waitbar(double(t)/double(Constants.t_size),w,"Update your V_m...")
+        if t == 40
+            disp("hey")
+        end
         M_cells = get_Gsyn(M_cells,L,t);
         M_cells = update_V_m(M_cells,t);
     end
@@ -64,14 +67,6 @@ end
 function M_cells = get_Gsyn(M_cells,L,t)
 % Compute Gsyn at time t for light protocol L.
    
-%     X1 = (M_cells.V_pre - M_cells.V_502(:,:,:,1))./M_cells.beta2(:,:,:,1);
-%     X2 = (M_cells.V_pre - M_cells.V_502(:,:,:,2))./M_cells.beta2(:,:,:,2);
-%     I = ones(size(X1));
-%     M_cells.g_syn2(:,:,:,1) = M_cells.g_min2(:,:,:,1) + (M_cells.g_max2(:,:,:,1) - M_cells.g_min2(:,:,:,1)).*(I-I./(I+exp(X1)));
-%     M_cells.g_syn2(:,:,:,2) = M_cells.g_min2(:,:,:,2) + (M_cells.g_max2(:,:,:,2) - M_cells.g_min2(:,:,:,2)).*(I./(I+exp(X2)));
-%     M_cells.g_syn(:,:,:) = M_cells.g_syn2(:,:,:,1) + M_cells.g_syn2(:,:,:,2);
-    
-
     M_cells = M_cells.update_V_pre(t);
     M_cells = M_cells.add_light_syn(L(:,t));
     i = 2;
@@ -107,17 +102,3 @@ function M_cells = update_V_m(M_cells,t)
     M_cells.V_m(:,t+1) =  dV + M_cells.V_m(:,t) ;
 end
 
-function S = get_firing_rate(M_cells,t)
-% Calculate ganglion cells firing rates at time t based on V_m([t]
-    names = ["GL_on", "GL_off"];
-    DV_0 = 5e-3;
-    i = 1;
-    for name = names 
-        ganglions = M_cells.names == name;
-        E_T = Cell(name, [0,0,0]).E_T;
-        DV_t = max(zeros(sum(ganglions),1),M_cells.V_m(ganglions,t)- E_T);
-        n  = 2 + (0.1*DV_t).^2;
-        S{i} = DV_t.^n./(DV_t.^n+DV_0.^n);
-        i = i +1;
-    end
-end
