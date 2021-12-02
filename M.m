@@ -139,7 +139,6 @@ classdef M < handle
             if t-Constants.time_coeff < 1
                 t = Constants.time_coeff+1;
             end
-%             M.V_pre = repmat(M.V_m(:,t-Constants.time_coeff),1,M.N_types,M.N_syn);
             not_zero = not(M.pre_syn_mat == 0);
             M.V_pre = -Inf(M.N_cells, M.N_types, M.N_syn);
             M.V_pre(not_zero) = M.V_m(M.pre_syn_mat(not_zero),t-Constants.time_coeff);
