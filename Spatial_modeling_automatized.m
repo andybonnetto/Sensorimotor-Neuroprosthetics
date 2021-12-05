@@ -167,12 +167,12 @@ function plot_layers(cell_list,n,um,cell_pos,vis)
         zlabel('z-axis [µm]')
 %         legend('CR', 'HRZ', 'BP', 'AM', 'GL')
 
-        figure()
-        k = 1;
-        names = ["CR","HRZ","BP_on","BP_off","AM_WF_on","AM_WF_off","AM_NF_on","GL_on","GL_off"];
-        sigma = [2.5,10.5,3.85,3.85,24,24,6,6*5/4,6].*um;
-        N = zeros(length(n)+1,1);
-        N(2:end) = cumsum(n);
+%         figure()
+%         k = 1;
+%         names = ["CR","HRZ","BP_on","BP_off","AM_WF_on","AM_WF_off","AM_NF_on","GL_on","GL_off"];
+%         sigma = [2.5,10.5,3.85,3.85,24,24,6,6*5/4,6].*um;
+%         N = zeros(length(n)+1,1);
+%         N(2:end) = cumsum(n);
 
 %         for name = names
 %             subplot(3, 3, k)
@@ -224,48 +224,6 @@ function [cell_list_degen,n_degen] = degeneration(cell_list,Populations,Degenera
 
 end
 
-% %%%%% Function connection_syn %%%%%
-% function cell_list = connection_syn(cell_list,cell_pos,sigma,um,n_sum_big,Populations,Populations_connection)
-% 
-%     B = [0 n_sum_big];
-%     z_extent = 105*um;
-% 
-%     for i=1:9
-%         if Populations(i) == 1
-%              k = 1;
-%              while Populations_connection(i,k) ~= 0
-%                  if Populations(Populations_connection(i,k)) == 1
-%                      for j=(B(i)+1):B(i+1)
-%                          xy0 = [cell_pos(j,1),cell_pos(j,2)];
-%                          z0 = cell_pos(j,3);
-%                          p0 = [xy0,z0];
-%                          idx_post = 1;
-%                          idx_pre = 1;
-%                          for l=(B(Populations_connection(i,k))+1):B(Populations_connection(i,k)+1)
-%                              xy = [cell_pos(l,1),cell_pos(l,2)];
-%                              z = cell_pos(l,3);
-%                              p = [xy,z];
-%                              dist_xy = euclidian_distance(xy,xy0);
-%                              dist_z = euclidian_distance(z,z0);
-%                              if dist_xy<sigma(i) && dist_z<z_extent
-%                                  if l > j 
-%                                      cell_list(j).post_syn_subset(idx_post) = l;
-%                                      cell_list(j).dist_post_syn_subset(idx_post) = euclidian_distance(p,p0);
-%                                      idx_post = idx_post+1;
-%                                  elseif l < j % Will need to be changed because l (CR) < j (HRZ) but it is postsynaptic
-%                                      cell_list(j).pre_syn_subset(idx_pre) = l;
-%                                      cell_list(j).dist_pre_syn_subset(idx_pre) = euclidian_distance(p,p0);
-%                                      idx_pre = idx_pre+1;
-%                                  end
-%                              end
-%                          end
-%                      end
-%                  end
-%                  k = k+1;
-%              end
-%         end
-%     end
-% end
 
 %%%%% Function connection_syn %%%%%
 function cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B)
@@ -327,15 +285,6 @@ end
 function visualize_connection_syn_all_pop(cell_list,um,M)
         
         visualize_connection_syn(cell_list,um,M,3523);
-%         visualize_connection_syn(cell_list,um,4447);
-%         visualize_connection_syn(cell_list,um,6402); 
-%         visualize_connection_syn(cell_list,um,6442);
-%         visualize_connection_syn(cell_list,um,8310);
-%         visualize_connection_syn(cell_list,um,8742);
-%         visualize_connection_syn(cell_list,um,9300);
-%         visualize_connection_syn(cell_list,um,9732);
-%         visualize_connection_syn(cell_list,um,10700);
-
  end
 
 %%%%% Function visualize_connection_syn %%%%%
@@ -461,12 +410,4 @@ function val = gaussC(x,y,stand_dev,center,i)
     exponent = ((x-xc).^2 + (y-yc).^2)./(2*stand_dev(i));
     val       = (exp(-exponent));
 end
-
-
-% G(x,y,mu,Sigma)
-% w = [G(x0,y0),...,G(xN,yN)]
-% p = w/sum(w_i)
-% randsample(big N, n'(=eta*N where eta is the percentage), p)
-% G,eta,{x_i,y_i}
-
 end
