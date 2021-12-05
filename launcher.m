@@ -7,6 +7,7 @@ cell_list = Spatial_modeling_automatized(Ma,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0
 %%
 disp("Declare 0.5 light protocol...")
 modes = ["full-0"];
+% Declare one big pulse of 0 intensity light for initialization
 p_duration = Constants.simulation_duration;
 p_spacing = 0;
 pp = [p_duration;p_spacing];
@@ -18,15 +19,15 @@ M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L,Ma);
 disp("Declare Light protocol...")
 n_tot = size(cell_list,2);
 modes = ["disk-plus-100","disk-plus-40","disk-minus-40", "disk-minus-100"];
-p_duration = 30e-3;
-p_spacing = 125e-3;
+p_duration = 29e-3;
+p_spacing = 157e-3;
 pp = zeros(2,size(modes,2));
 for i = 1:size(modes,2)
     pp(:,i)= [(i-1)*p_spacing;p_duration];
 end
 L = light_to_cells(mat3D,n_CR,modes,pp,0);
 
-disp("Sanitity check and initial matrice generation...")
+disp("Pulsed light Stimulation")
 M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma);
 %%
 d = 100e-6;

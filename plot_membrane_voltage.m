@@ -26,6 +26,9 @@ function plot_membrane_voltage(M_cells,mat3D)
 
     figure()
     k=1;
+    H = 15;
+    T = 2501;
+    S = 1; %Saturation
     for name = names
         subplot(3,3,k);
         type = M_cells.names == name;
@@ -35,13 +38,17 @@ function plot_membrane_voltage(M_cells,mat3D)
         y = y(type_x);
         V_m = M_cells.V_m(type,:);
         V_m = V_m(type_x,:);
-        c = (((V_m(1,1)-V_m)./abs((min(V_m,[],"all")-max(V_m,[],"all"))))+1)/2;
-        img = ones(120,1000,3)*0.5;
-        [y_sort,inda,indc] = unique(round((y/abs(min(y)-max(y))+min(y)+1)*80));
-        t = 1:1000;
+%         c = (((V_m(1,1)-V_m)./abs((min(V_m,[],"all")-max(V_m,[],"all")))*S)+1)/2;
+        c = ((V_m(1,1)-V_m)/(abs(min(V_m,[],"all") - max(V_m,[],"all"))+3e-3))*S+0.5;
+        img = ones(H,T,3)*0.5;
+        [y_sort,inda,indc] = unique(round((y/abs(min(y)-max(y)))*H+H/2+1));
+        t = 1:T;
         img(y_sort,t,1)=c(inda,t);
         img(y_sort,t,3)=1-c(inda,t);
-        imshow(img)
+
+        img = imresize(img,[500,1000]);
+        img(:,:,2) = 0.5;
+        imshow(img,[0,1])
 
         k = k +1;
     end

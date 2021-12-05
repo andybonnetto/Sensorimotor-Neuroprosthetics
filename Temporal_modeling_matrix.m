@@ -42,9 +42,9 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
     end
     if isempty(V_m_init)
         V_m_init = M_cells.V_S(:,end);
+        assignin("base","V_m_init",V_m_init)
     end
     close(w);
-    assignin("base","V_m_init",V_m_init)
     assignin("base","M_cells",M_cells)
 
 end
