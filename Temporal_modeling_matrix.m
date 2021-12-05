@@ -36,9 +36,7 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L)
     w = waitbar(0, "Please wait...");
     for t = 1:Constants.t_size
         waitbar(double(t)/double(Constants.t_size),w,"Update your V_m...")
-        if t == 40
-            disp("hey")
-        end
+        
         M_cells = get_Gsyn(M_cells,L,t);
         M_cells = update_V_m(M_cells,t);
     end

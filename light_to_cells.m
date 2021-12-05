@@ -17,7 +17,7 @@ function SL = spatial_light(mat,n_CR,mode,vis)
     list_of_modes = ["full-0", "full-1", "disk-plus-40", "disk-plus-100", "disk-minus-40", "disk-minus-100"];
     CR_mat = zeros(n_CR,3);
     um = 1e-6;
-    SL = zeros(1,n_CR);
+    SL = ones(1,n_CR)*0.5;
     for i=1:n_CR
             CR_mat(i,:) = mat(i,:);
     end
@@ -135,7 +135,7 @@ function L = temporal_light(SL,L,pp,vis)
 
     if vis
        figure()
-       plot(0:Constants.time_step:Constants.simulation_duration-Constants.time_step, L(1,:))
+       plot(0:Constants.time_step:Constants.simulation_duration-Constants.time_step, L(1844,:))
     end
 end
 

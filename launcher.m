@@ -1,8 +1,7 @@
 clear variables; clc; close all
 recycle on
-k = 1;
-disp("Spatial modeling...")
-Spatial_modeling(1)
+disp("Spatial modeling automatized...")
+cell_list = Spatial_modeling_automatized(1,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
 
 %%
 disp("Declare 0.5 light protocol...")
@@ -14,19 +13,10 @@ L = light_to_cells(mat3D,n_CR,modes,pp,0);
 disp("Initial values and initial matrice generation...")
 M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L);
 
-%%
-c = 10000;
-k = 1;
-f = figure(k);
-plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(c,:)*1e3)
-title(strcat("Cell ", num2str(c)))
-xlabel("Time")
-ylabel("V_m (mV)")
-
 %% 
 disp("Declare Light protocol...")
 n_tot = size(cell_list,2);
-modes = ["full-1","full-0","full-1", "full-0"];
+modes = ["disk-plus-100","disk-plus-40","disk-minus-40", "disk-minus-100"];
 p_duration = 30e-3;
 p_spacing = 125e-3;
 pp = zeros(2,size(modes,2));
@@ -53,23 +43,25 @@ for name = names
     d = M_cells.names == name;
     plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(d,:)*1e3)
     title(name)
+    xlabel("Time [s]")
+    ylabel("Voltage [mV]")
     k = k +1;
 end
 %%
-
-figure()
-d = M_cells.names == "GL_on";
-plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(d,:)*1e3)
-%%
+% 
 % figure()
-d = M_cells.names == "GL_on";
-sub1 = M_cells.V_m(d,end) == M_cells.V_m(9568,end);
-sub2 = not(M_cells.V_m(d,end) == M_cells.V_m(9568,end));
-disp(sparse(sub2))
-% disp(sum(sparse(sub1)))
-% plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(sub2,:)*1e3)
-
-
+% d = M_cells.names == "GL_on";
+% plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(d,:)*1e3)
+% %%
+% % figure()
+% d = M_cells.names == "GL_on";
+% sub1 = M_cells.V_m(d,end) == M_cells.V_m(9568,end);
+% sub2 = not(M_cells.V_m(d,end) == M_cells.V_m(9568,end));
+% disp(sparse(sub2))
+% % disp(sum(sparse(sub1)))
+% % plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(sub2,:)*1e3)
+% 
+% 
 
 %%
 
