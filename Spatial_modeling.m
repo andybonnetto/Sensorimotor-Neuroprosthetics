@@ -541,7 +541,7 @@ function cell_list = connection_syn(cell_list,cell_pos,sigma,n,um)
             z0 = cell_pos(i,3);
             z = cell_pos(j,3);
             dist_z = abs(z0-z);
-            if dist_xy<sigma(8)*3 && dist_z<z_extent
+            if dist_xy<sigma(8)*3.5 && dist_z<z_extent
                 cell_list(i).pre_syn_subset(k) = j;
                 p0 = [xy0,z0];
                 p = [xy,z];
