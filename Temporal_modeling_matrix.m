@@ -1,4 +1,4 @@
-function M_cells = Temporal_modeling_matrix(cell_list,init,L)
+function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
 % Run the temporal modeling of cells in cell_list by converting into
 % matrix of class M and running differential equations from Cottaris 2005.
 % Simulation parameters are stored in Constants.m structure.
@@ -37,7 +37,7 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L)
     for t = 1:Constants.t_size
         waitbar(double(t)/double(Constants.t_size),w,"Update your V_m...")
         
-        M_cells = get_Gsyn(M_cells,L,t);
+        M_cells = get_Gsyn(M_cells,L,t,Ma);
         M_cells = update_V_m(M_cells,t);
     end
     if isempty(V_m_init)
@@ -62,7 +62,7 @@ function M_cells = initialization(M_cells,V_m_init)
 %     M_cells.Delta_Ve = ones(M_cells.N_cells,Constants.t_size)*(100e-3);
 end
 
-function M_cells = get_Gsyn(M_cells,L,t)
+function M_cells = get_Gsyn(M_cells,L,t,Ma)
 % Compute Gsyn at time t for light protocol L.
    
     M_cells = M_cells.update_V_pre(t);
@@ -84,7 +84,7 @@ function M_cells = get_Gsyn(M_cells,L,t)
 %     cones = M_cells.names == "CR";
     W = sum(exp(-M_cells.D ./ M_cells.sigma),3);
     not_zero = not(W==0);
-    S = sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
+    S = Ma*sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
     M_cells.Gsyn(not_zero) = (1./W(not_zero)) .* S(not_zero);
 %     M_cells.Gsyn(cones,:) = sum(M_cells.g_syn(cones,:,:),3);
 end

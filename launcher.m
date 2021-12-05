@@ -1,7 +1,8 @@
 clear variables; clc; close all
 recycle on
 disp("Spatial modeling automatized...")
-cell_list = Spatial_modeling_automatized(1,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
+Ma = 1;
+cell_list = Spatial_modeling_automatized(Ma,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
 
 %%
 disp("Declare 0.5 light protocol...")
@@ -11,7 +12,7 @@ p_spacing = 0;
 pp = [p_duration;p_spacing];
 L = light_to_cells(mat3D,n_CR,modes,pp,0);
 disp("Initial values and initial matrice generation...")
-M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L);
+M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L,Ma);
 
 %% 
 disp("Declare Light protocol...")
@@ -26,7 +27,7 @@ end
 L = light_to_cells(mat3D,n_CR,modes,pp,0);
 
 disp("Sanitity check and initial matrice generation...")
-M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L);
+M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma);
 %%
 d = 100e-6;
 x_center = 0;
