@@ -33,7 +33,7 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Gauss_degen)
                               4 6 7 0 0]; % 1 refers to CR, 2 refers to HRZ, 3 refers to BP_on, etc. The 0 at the end is a stop marker
     noise = 0;
     um = 1e-6;
-    lambda = [2.5,7,3.85,3.85,8,8,6,6,6].*um;
+    lambda = (1/sqrt(M))*[2.5,7,3.85,3.85,8,8,6,6,6].*um;
     sigma = [2.5,10.5,3.85,3.85,24,24,6,6*5/4,6].*um;
     z_min = [170,100,100,100,80,80,80,25,25].*um;
     z_max = [205,128,128,128,101,101,101,39,39].*um;
