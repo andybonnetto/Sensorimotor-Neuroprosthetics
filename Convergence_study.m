@@ -14,7 +14,7 @@ V_s_conv = zeros(length(names),length(interval));
 i = 1;
 for Ma = interval
     disp("Spatial modeling automatized...")
-    cell_list = Spatial_modeling_automatized(Ma,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
+    cell_list = Spatial_modeling_automatized(1,Ma,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
     L = light_to_cells(mat3D,n_CR,modes,pp,0);
     disp("Initial values and initial matrice generation...")
     M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L,Ma);

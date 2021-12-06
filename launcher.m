@@ -2,7 +2,7 @@ clear variables; clc; close all
 recycle on
 disp("Spatial modeling automatized...")
 Ma = 1;
-cell_list = Spatial_modeling_automatized(Ma,1,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
+cell_list = Spatial_modeling_automatized(1,Ma,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
 
 %%
 disp("Declare 0.5 light protocol...")
@@ -25,7 +25,7 @@ pp = zeros(2,size(modes,2));
 for i = 1:size(modes,2)
     pp(:,i)= [(i-1)*p_spacing;p_duration];
 end
-L = light_to_cells(mat3D,n_CR,modes,pp,0);
+L = light_to_cells(mat3D,n_CR,modes,pp,1);
 
 disp("Pulsed light Stimulation")
 M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma);
