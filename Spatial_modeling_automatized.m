@@ -47,7 +47,7 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Gauss_degen)
     
     % Attribute one position to each cell and visualize the layers
     cell_pos = create_pos(Populations,noise,lambda,sigma,z_min,z_max,n);
-    
+
     %Save cell_pos in a mat file
     save_pos(cell_pos)
 
@@ -83,7 +83,14 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Gauss_degen)
     assignin("base","n_CR",n_gauss_degen(1));
 %     % Visualize one cell with its connections
 %     visualize_connection_syn_all_pop(cell_list,um,M);
-
+    
+    mat3D = zeros(length(cell_list),3);
+    i = 1;
+    for c = cell_list
+        mat3D(i,:) = [c.x,c.y,c.z];
+        i = i+1;
+    end
+    save_pos(mat3D)
 %     
 %     %Save cell_list in a MAT-file 
 %     save_cell_list(cell_list)

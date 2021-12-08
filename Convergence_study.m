@@ -14,12 +14,12 @@ V_s_conv = zeros(length(names),length(interval));
 i = 1;
 for Ma = interval
     disp("Spatial modeling automatized...")
-    cell_list = Spatial_modeling_automatized(1,Ma,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
+    cell_list = Spatial_modeling_automatized(0,Ma,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
     L = light_to_cells(mat3D,n_CR,modes,pp,0);
     disp("Initial values and initial matrice generation...")
     M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L,Ma);
     for k=1:length(names)
-        type = M_cells.name == names(k);
+        type = M_cells.names == names(k);
         V_s = M_cells.V_S(type,:);
         V_s_conv(k,i) = V_s(1,end);
     end
@@ -31,7 +31,7 @@ figure()
 k = 1;
 for name = names
     subplot(3, 3, k)
-    plot(inteval,V_s_conv(k))
+    plot(interval,V_s_conv(k,:))
     title(name)
     xlabel("Magnification")
     ylabel("V_S [mV]")

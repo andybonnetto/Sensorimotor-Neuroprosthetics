@@ -84,7 +84,7 @@ function M_cells = get_Gsyn(M_cells,L,t,Ma)
 %     cones = M_cells.names == "CR";
     W = sum(exp(-M_cells.D ./ M_cells.sigma),3);
     not_zero = not(W==0);
-    S = Ma*sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
+    S = 1/Ma*sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
     M_cells.Gsyn(not_zero) = (1./W(not_zero)) .* S(not_zero);
 %     M_cells.Gsyn(cones,:) = sum(M_cells.g_syn(cones,:,:),3);
 end

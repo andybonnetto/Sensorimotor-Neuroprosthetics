@@ -2,7 +2,7 @@ clear variables; clc; close all
 recycle on
 disp("Spatial modeling automatized...")
 Ma = 1;
-cell_list = Spatial_modeling_automatized(1,Ma,[1,1,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,0]);
+cell_list = Spatial_modeling_automatized(1,Ma,[1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0]);
 
 %%
 disp("Declare 0.5 light protocol...")

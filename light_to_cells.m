@@ -135,7 +135,7 @@ function L = temporal_light(SL,L,pp,vis)
 
     if vis
        figure()
-       plot(0:Constants.time_step:Constants.simulation_duration-Constants.time_step, L(1844,:))
+       plot(0:Constants.time_step:Constants.simulation_duration-Constants.time_step, L(1850,:))
     end
 end
 
