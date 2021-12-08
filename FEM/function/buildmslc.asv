@@ -1,0 +1,14 @@
+function [] = buildmslc(pgtag,)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+pg = model.result.create(pgtag, 'PlotGroup3D'); % Plot group cr
+
+pg.create('mslc1', 'Multislice');
+pg.feature('mslc1').set('data', 'dset1');
+
+
+
+
+end
+
