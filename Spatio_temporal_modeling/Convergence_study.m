@@ -8,7 +8,7 @@ modes = ["full-0"];
 p_duration = Constants.simulation_duration;
 p_spacing = 0;
 pp = [p_duration;p_spacing];
-interval = 1:-0.2:0.2;
+interval = 1:-0.1:0.2;
 V_s_conv = zeros(length(names),length(interval));
 
 i = 1;
@@ -31,9 +31,9 @@ figure()
 k = 1;
 for name = names
     subplot(3, 3, k)
-    plot(interval,V_s_conv(k,:))
+    plot(interval(:),V_s_conv(k,1) - V_s_conv(k,:))
     title(name)
     xlabel("Magnification")
-    ylabel("V_S [mV]")
+    ylabel("Difference of V_S [mV]")
     k = k+1;
 end

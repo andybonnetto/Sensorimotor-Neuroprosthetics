@@ -1,4 +1,4 @@
-function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
+function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma,Delta_Ve)
 % Run the temporal modeling of cells in cell_list by converting into
 % matrix of class M and running differential equations from Cottaris 2005.
 % Simulation parameters are stored in Constants.m structure.
@@ -11,7 +11,8 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
 
     import M.*
     import Constants.*
-
+    
+    % Get arguments
     if nargin < 2
         M_init = [];
         V_m_init = [];
@@ -19,7 +20,6 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
         M_init = init{1};
         V_m_init = init{2};
     end
-
     if isempty(M_init)
         M_cells = M(cell_list);
         assignin("base","M_init",M_cells)
@@ -27,11 +27,14 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
     else
         M_cells = M_init;
     end
-
+    % Initialize Vm values
     if isempty(V_m_init)
         M_cells = initialization(M_cells);
     else
-        M_cells = initialization(M_cells,V_m_init);
+        % for electrical stimulation
+        M_cells = initialization(M_cells,V_m_init,Delta_Ve);
+        % for light stimulation
+%         M_cells = initialization(M_cells,V_m_init);
     end
     w = waitbar(0, "Please wait...");
     for t = 1:Constants.t_size
@@ -49,7 +52,7 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma)
 
 end
 
-function M_cells = initialization(M_cells,V_m_init)
+function M_cells = initialization(M_cells,V_m_init,Delta_Ve)
 % Membrane potential initialization for t = 0, if initial values not
 % specied, generates random values.
     if nargin < 2
@@ -57,7 +60,9 @@ function M_cells = initialization(M_cells,V_m_init)
 %         M_cells.V_m = rand(M_cells.N_cells, Constants.t_size)*(-100e-3);
     else
         M_cells.V_m(:,1) = V_m_init;
+        M_cells.Delta_Ve = Delta_Ve;
     end
+    % Remove for light stimulation
 
 %     M_cells.Delta_Ve = ones(M_cells.N_cells,Constants.t_size)*(100e-3);
 end
@@ -82,9 +87,9 @@ function M_cells = get_Gsyn(M_cells,L,t,Ma)
         i = i+1;
     end
 %     cones = M_cells.names == "CR";
-    W = sum(exp(-M_cells.D ./ M_cells.sigma),3);
+    W = sum(exp(-M_cells.D ./ M_cells.sigma ./sqrt(Ma)),3);
     not_zero = not(W==0);
-    S = 1/Ma*sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma),3);
+    S = 1/sqrt(Ma)*sum(M_cells.g_syn.* exp(-M_cells.D ./ M_cells.sigma ./sqrt(Ma)),3);
     M_cells.Gsyn(not_zero) = (1./W(not_zero)) .* S(not_zero);
 %     M_cells.Gsyn(cones,:) = sum(M_cells.g_syn(cones,:,:),3);
 end

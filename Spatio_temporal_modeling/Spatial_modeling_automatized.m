@@ -1,14 +1,11 @@
-function cell_list = Spatial_modeling_automatized(vis,M,Populations,Gauss_degen)
+function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
 
     import Cell.*
     % Spatial Modeling
 
     % Variables
-%     vis = 1;
-%     M = 1; % Magnification factor that multiplies the dimensions of the space 
-%     Populations = [1,0,0,0,1,1,1,0,0]; % Populations that we want to have (1) or not (0) in the simulation
-    Degeneration = [0.7,0,0,0,0,0,0,0.3,0.3]; % Percentage of cells that will be degenerated for each population
-    stand_dev = [50,0,0,0,0,0,0,50,50]; % Standard deviation for Gaussian function
+    Gauss_degen = Degeneration > 0;
+    stand_dev = [50,50,50,50,50,50,50,50,50]; % Standard deviation for Gaussian function
     center = [0 0;
                0 0;
                0 10;
@@ -71,7 +68,7 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Gauss_degen)
     B_gauss_degen = [0 n_gauss_degen_sum];
 
     % Visualize the layers after gaussian degeneration
-    plot_layers(cell_list_gauss_degen,n_gauss_degen,um,cell_pos,vis);
+    plot_layers(cell_list_gauss_degen,n_gauss_degen,um,cell_pos,vis,path_to_folder);
 
     % Connect the population of cells through synapses and visualize the
     % connections
@@ -156,7 +153,7 @@ function position = unique_pos(noise,lambda,sigma,z_min,z_max,n,i)
 end
 
 %%%%% Function visualization_pos %%%%%
-function plot_layers(cell_list,n,um,cell_pos,vis)
+function plot_layers(cell_list,n,um,cell_pos,vis, path_to_folder)
 
     if vis == 1
 
@@ -172,6 +169,10 @@ function plot_layers(cell_list,n,um,cell_pos,vis)
         xlabel('x-axis [µm]')
         ylabel('y-axis [µm]')
         zlabel('z-axis [µm]')
+
+        if nargin > 5
+            saveas(gcf,strcat(path_to_folder,"Spatial modeling"))
+        end
 %         legend('CR', 'HRZ', 'BP', 'AM', 'GL')
 
 %         figure()
@@ -373,7 +374,6 @@ function [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell
                 bin_matrix = transpose(bin_matrix);
             else
                 bin_matrix = ones(n_new(i),1);
-                disp('Hello ones')
             end
         end
         bin_matrix_tot = [bin_matrix_tot;bin_matrix];
