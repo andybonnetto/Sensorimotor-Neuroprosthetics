@@ -7,7 +7,7 @@ Pop_represented = [1,1,1,1,1,1,1,1,1]; %Column par type: [0,0,1,1,1,1,1,1,1] rem
 Pop_degen = [0,0,0,0,0,0,0,0,0]; % if different than 0, value will be used as percentage of cells degenerated in given populations, Go inside spatial_modeling for further parameter changes
 dVe = load("av_delta_v.mat");
 Light_or_Electrode = 1; % 1 for Light and 0 for 
-folder_path = "..\Results\09.12.2021\Test\";
+folder_path = "..\..\Results\10.12.2021\Light_Healthy\";
 if not(exist(folder_path))
     error("Folder not found")
 end
@@ -37,7 +37,8 @@ if Light_or_Electrode
     end
     L = light_to_cells(mat3D,n_CR,modes,pp,1);
     disp("Pulsed light Stimulation")
-    M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma);
+    Delta_Ve = zeros(M_cells.N_cells,Constants.t_size);
+    M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma, Delta_Ve);
 else
     disp("Electrical stimulation")
     vis_pulse = 0;
