@@ -1,8 +1,8 @@
-function Delta_Ve = generate_electrical_pulse(v_diff_max,cell_list,vis)
+function Delta_Ve = generate_electrical_pulse(v_diff_max,cell_list,vis,fp_indices)
     import Constants.*
 
     n_cells = length(cell_list);
-    Delta_Ve = (v_diff_max(end-n_cells+1:end)).';
+    Delta_Ve = (v_diff_max(1,fp_indices)).';
     Delta_Ve = repmat(Delta_Ve,1,Constants.t_size);
 
     burst_amplitudes = [0.5,1,3,6];

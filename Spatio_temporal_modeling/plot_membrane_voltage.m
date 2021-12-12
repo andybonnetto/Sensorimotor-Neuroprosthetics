@@ -74,7 +74,7 @@ function plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,path_to_fold
     S = 1; %Saturation
     % Declare normalization coefficient
     norm = 7e-4;
-    norm_V = 10e-3;
+%     norm_V = 10e-3;
 
     for name = names
         subplot(3,3,k);

@@ -1,4 +1,4 @@
-function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
+function [cell_list,fp_indices] = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
 
     import Cell.*
     % Spatial Modeling
@@ -8,11 +8,11 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration
     stand_dev = [50,50,50,50,50,50,50,50,50]; % Standard deviation for Gaussian function
     center = [0 0;
                0 0;
-               0 10;
                0 0;
-               5 5;
-               5 5;
-               5 5;
+               0 0;
+               0 0;
+               0 0;
+               0 0;
                0 0;
                0 0]; % Center of the applied Gaussian function
 %     Gauss_degen = [0,0,0,0,0,0,0,0,0]; % Targeted populations for Gaussian degeneration (here we only target the CR and BP_on cells)
@@ -63,9 +63,11 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration
 %     plot_layers(cell_list_degen,n_degen,um,vis);
 
     % Generate a Gaussian function for degeneration
-    [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell_list,Populations,n_new,stand_dev,center,vis);
+    [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell_list,Populations,n_new,stand_dev,center,vis,Degeneration);
     n_gauss_degen_sum = cumsum(n_gauss_degen);
     B_gauss_degen = [0 n_gauss_degen_sum];
+    
+    fp_indices = get_cell_indices(cell_pos,cell_list_gauss_degen);
 
     % Visualize the layers after gaussian degeneration
     plot_layers(cell_list_gauss_degen,n_gauss_degen,um,cell_pos,vis,path_to_folder);
@@ -76,6 +78,8 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration
 %     cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B);
 %     cell_list_degen = connection_syn(cell_list_degen,sigma,um,Populations,Populations_connection,B_degen);
     cell_list_gauss_degen = connection_syn(cell_list_gauss_degen,sigma,um,Populations,Populations_connection,B_gauss_degen);
+    
+    
     cell_list = cell_list_gauss_degen;
     assignin("base","n_CR",n_gauss_degen(1));
 %     % Visualize one cell with its connections
@@ -92,6 +96,24 @@ function cell_list = Spatial_modeling_automatized(vis,M,Populations,Degeneration
 %     %Save cell_list in a MAT-file 
 %     save_cell_list(cell_list)
 % end
+
+    
+    function fp_indices = get_cell_indices(cell_pos,cell_list_gauss_degen)
+        i = 1;
+        fp_indices = zeros(size(cell_list_gauss_degen));
+        for cell_d = cell_list_gauss_degen
+            k = 1;
+            for pos = cell_pos.'
+                val = cell_d.x == pos(1) && cell_d.y == pos(2) && cell_d.z == pos(3);
+                if val
+                    fp_indices(i) = k;
+                    break
+                end
+                k = k+1;
+            end
+            i = i+1;
+        end
+    end
 
 %%%%% Function redefine_n %%%%%
 function n_new = redefine_n(Populations,n)
@@ -359,13 +381,13 @@ function save_pos(mat)
     assignin("base", "mat3D", mat);
 end
 
-function [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell_list,Populations,n_new,stand_dev,center,vis)
+    function [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell_list,Populations,n_new,stand_dev,center,vis,Degeneration)
     bin_matrix_tot = [];
     for i=1:length(Populations)
         bin_matrix = [];
         if Populations(i) == 1
             if Gauss_degen(i) == 1
-                P = gaussian_prob(n_new,stand_dev,center,vis,i);
+                P = gaussian_prob(n_new,stand_dev,center,vis,i,Degeneration);
                 
                 rdn_matrix = rand(n_new(i),1);
                 for j = 1:n_new(i)
@@ -379,12 +401,12 @@ function [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell
         bin_matrix_tot = [bin_matrix_tot;bin_matrix];
         n_gauss_degen(i)=sum(bin_matrix(bin_matrix==1));
     end               
-    cell_list_gauss_degen = cell_list(not(not(bin_matrix_tot)));
+    cell_list_gauss_degen = cell_list(logical(bin_matrix_tot));
 end
 
-function P = gaussian_prob(n_new,stand_dev,center,vis,i)
+    function P = gaussian_prob(n_new,stand_dev,center,vis,i,Degeneration)
     P = [];
-    G = gauss2d(n_new,stand_dev,center,vis,i);
+    G = gauss2d(n_new,stand_dev,center,vis,i,Degeneration);
     for j = 1:length(G)
         for k = 1:length(G)
             p = G(j,k);
@@ -393,14 +415,14 @@ function P = gaussian_prob(n_new,stand_dev,center,vis,i)
     end
 end
 
-function G = gauss2d(n_new,stand_dev,center,vis,i)
+    function G = gauss2d(n_new,stand_dev,center,vis,i,Degeneration)
 
     size = sqrt(n_new(i));
     index = -floor(size/2):floor(size/2);
     x = index;
     y = index;
     [X,Y]=meshgrid(x,y);
-    G = gaussC(X,Y,stand_dev,center,i);
+    G = Degeneration(i)*gaussC(X,Y,stand_dev,center,i);
 
     if vis == 1
         figure

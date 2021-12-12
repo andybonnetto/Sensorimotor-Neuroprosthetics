@@ -1,4 +1,4 @@
-function S = get_firing_rate(M_cells,vis,path_to_folder)
+function S = get_firing_rate(M_cells,vis,path_to_folder,new_threshold)
 % Calculate ganglion cells firing rates at time t based on V_m([t]
     names = ["GL_on", "GL_off"];
     name_ind{1} = M_cells.names == names(1);
@@ -9,6 +9,9 @@ function S = get_firing_rate(M_cells,vis,path_to_folder)
     for name = names 
         ganglions = M_cells.names == name;
         E_T = Cell(name, [0,0,0]).E_T;
+        if nargin > 3
+            E_T = new_threshold(i);
+        end
         DV_t = max(zeros(size(M_cells.V_m(ganglions,:))),M_cells.V_m(ganglions,:)- E_T);
         n  = 2 + (0.1*DV_t).^2;
         S{i} = DV_t.^n./(DV_t.^n+DV_0.^n);

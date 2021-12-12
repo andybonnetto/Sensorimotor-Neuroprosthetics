@@ -3,17 +3,18 @@ recycle on
 
 % Parameters
 Ma = 1; % Magnification coefficient (reflect density of cells)
-Pop_represented = [1,1,1,1,1,1,1,1,1]; %Column par type: [0,0,1,1,1,1,1,1,1] removes cones and horizontals
-Pop_degen = [0,0,0,0,0,0,0,0,0]; % if different than 0, value will be used as percentage of cells degenerated in given populations, Go inside spatial_modeling for further parameter changes
+Pop_represented = [0,0,1,1,1,1,1,1,1]; %Column par type: [0,0,1,1,1,1,1,1,1] removes cones and horizontals
+Pop_degen = [0,0,0.5,0.5,0,0,0,0,0]; % if different than 0, value will be used as percentage of cells degenerated in given populations, Go inside spatial_modeling for further parameter changes
 dVe = load("av_delta_v.mat");
-Light_or_Electrode = 1; % 1 for Light and 0 for 
-folder_path = "..\..\Results\10.12.2021\Light_Healthy\";
+Light_or_Electrode = 0; % 1 for Light and 0 for 
+folder_path = "..\..\Results\10.12.2021\Light_Degen_0.7\";
 if not(exist(folder_path))
     error("Folder not found")
 end
 
 disp("Spatial modeling automatized...")
-cell_list = Spatial_modeling_automatized(1,Ma,Pop_represented,Pop_degen,folder_path);
+[cell_list,fp_indices] = Spatial_modeling_automatized(1,Ma,Pop_represented,Pop_degen,folder_path);
+size(fp_indices)
 
 disp("Calculate resting potentials") %Get M_init and V_init
 modes = ["full-0"];
@@ -42,7 +43,7 @@ if Light_or_Electrode
 else
     disp("Electrical stimulation")
     vis_pulse = 0;
-    Delta_Ve = generate_electrical_pulse(dVe,cell_list,vis_pulse);
+    Delta_Ve = generate_electrical_pulse(dVe.Delta_Ve,cell_list,vis_pulse,fp_indices);
     M_cells = Temporal_modeling_matrix(cell_list,{M_init,V_m_init},L,Ma,Delta_Ve);
 end
 
@@ -65,11 +66,11 @@ end
 saveas(gcf, strcat(folder_path,"V_m subplots"))
 
 if Light_or_Electrode
-    norm_V = 10e-3;
+    norm_V = 9e-3;
 else
-    norm_V = 16e-3;
+    norm_V = 15e-3;
 end
-
+% Color plots
 plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,folder_path)
 
 % Calculate Firing rate
@@ -77,5 +78,19 @@ S = get_firing_rate(M_cells,1,folder_path);
 
 
 %% Section to replot after simulation
+k=1;
+for name = names
+    subplot(3,3,k)
+    d = M_cells.names == name;
+    plot(linspace(0,Constants.simulation_duration,Constants.t_size+1), M_cells.V_m(d,:)*1e3)
+    title(name)
+    xlabel("Time [s]")
+    ylabel("Voltage [mV]")
+    k = k +1;
+end
 
-
+plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,folder_path)
+%%
+% Calculate Firing rate
+new_thresholds = [-60e-3,-53.4e-3];
+S = get_firing_rate(M_cells,1,folder_path,new_thresholds);
