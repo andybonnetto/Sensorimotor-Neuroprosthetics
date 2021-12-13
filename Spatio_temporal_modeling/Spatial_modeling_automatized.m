@@ -1,4 +1,4 @@
-function [cell_list,fp_indices] = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
+function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
 
     import Cell.*
     % Spatial Modeling
@@ -75,12 +75,12 @@ function [cell_list,fp_indices] = Spatial_modeling_automatized(vis,M,Populations
     % Connect the population of cells through synapses and visualize the
     % connections
 
-%     cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B);
+    cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B);
 %     cell_list_degen = connection_syn(cell_list_degen,sigma,um,Populations,Populations_connection,B_degen);
-    cell_list_gauss_degen = connection_syn(cell_list_gauss_degen,sigma,um,Populations,Populations_connection,B_gauss_degen);
+    cell_list_d = connection_syn(cell_list_gauss_degen,sigma,um,Populations,Populations_connection,B_gauss_degen);
     
     
-    cell_list = cell_list_gauss_degen;
+%     cell_list = cell_list_gauss_degen;
     assignin("base","n_CR",n_gauss_degen(1));
 %     % Visualize one cell with its connections
 %     visualize_connection_syn_all_pop(cell_list,um,M);

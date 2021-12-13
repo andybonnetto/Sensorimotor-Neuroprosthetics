@@ -22,7 +22,7 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma,Delta_Ve)
     end
     if isempty(M_init)
         M_cells = M(cell_list);
-        assignin("base","M_init",M_cells)
+%         assignin("base","M_init",M_cells)
         disp("Done copying datas from cell_list")
     else
         M_cells = M_init;
