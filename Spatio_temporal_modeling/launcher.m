@@ -4,10 +4,10 @@ recycle on
 % Parameters
 Ma = 1; % Magnification coefficient (reflect density of cells)
 Pop_represented = [0,0,1,1,1,1,1,1,1]; %Column par type: [0,0,1,1,1,1,1,1,1] removes cones and horizontals
-Pop_degen = [0,0,0.7,0.7,0,0,0,0,0]; % if different than 0, value will be used as percentage of cells degenerated in given populations, Go inside spatial_modeling for further parameter changes
+Pop_degen = [0,0,0.9,0,0,0,0,0,0]; % if different than 0, value will be used as percentage of cells degenerated in given populations, Go inside spatial_modeling for further parameter changes
 dVe = load("av_delta_v.mat");
 Light_or_Electrode = 0; % 1 for Light and 0 for 
-folder_path = "..\..\Results\10.12.2021\Light_Degen_0.7\";
+folder_path = "..\..\Results\13.12.2021\Electrode degen 0.9\";
 if not(exist(folder_path))
     error("Folder not found")
 end
@@ -25,7 +25,9 @@ pp = [p_duration;p_spacing];
 L = light_to_cells(mat3D,n_CR,modes,pp,0);
 disp("Initial values and initial matrice generation...")
 M_cells = Temporal_modeling_matrix(cell_list,{[],[]},L,Ma);
-%%
+
+%------- Start from here if you wanna test new electrical pulses ----
+
 % Get initial voltages and matrices for non degenerated cells
 V_m_init = V_m_init(fp_indices);
 M_init = M(cell_list_d);
@@ -72,7 +74,7 @@ saveas(gcf, strcat(folder_path,"V_m subplots"))
 if Light_or_Electrode
     norm_V = 9e-3;
 else
-    norm_V = 15e-3;
+    norm_V = 9e-3;
 end
 % Color plots
 plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,folder_path)
@@ -83,6 +85,7 @@ S = get_firing_rate(M_cells,1,folder_path);
 
 %% Section to replot after simulation
 k=1;
+figure()
 for name = names
     subplot(3,3,k)
     d = M_cells.names == name;
@@ -96,5 +99,5 @@ end
 plot_membrane_voltage(M_cells,mat3D(fp_indices,:),Pop_represented,norm_V,folder_path)
 %%
 % Calculate Firing rate
-new_thresholds = [-60e-3,-53.4e-3];
+new_thresholds = [-62e-3,-53.2e-3];
 S = get_firing_rate(M_cells,1,folder_path,new_thresholds);

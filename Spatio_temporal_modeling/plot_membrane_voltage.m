@@ -29,7 +29,7 @@ function plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,path_to_fold
             B = ones(H+1,L+1)*0.5;
             % Get color matrice for every cells in type
             V_m = M_cells.V_m(type,t);
-            V_m_0 = M_cells.V_m(type,1);
+            V_m_0 = M_cells.V_S(type,end);
             c = round(((V_m-V_m_0)/norm_V)/2*S+0.5,5);
             % Get indice of colored cells
             c_not_zero = not(c == 0.5);
@@ -87,9 +87,11 @@ function plot_membrane_voltage(M_cells,mat3D,Pop_represented,norm_V,path_to_fold
         y = y(type_x);
         % Get colors from Vm
         V_m = M_cells.V_m(type,:);
+        V_0 = M_cells.V_S(type,end);
+        V_0 = V_0(type_x,:);
         V_m = V_m(type_x,:);
 %         c = (((V_m(1,1)-V_m)./abs((min(V_m,[],"all")-max(V_m,[],"all")))*S)+1)/2;
-        c = round((((V_m-V_m(:,1))/norm_V+3e-3))*S+0.5,5);
+        c = round((((V_m-V_0)/norm_V+3e-3))*S+0.5,5);
         % Find indices of colored cells
         c_not_zero = not(c==0.5);
         y_target = y(c_not_zero(:,200));

@@ -300,8 +300,8 @@ function cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_c
                  end
              end
         end
-        close(w)
     end
+    close(w)
 end
 
 %%%%% Function euclidian_distance %%%%%

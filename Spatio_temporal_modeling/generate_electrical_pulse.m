@@ -5,7 +5,7 @@ function Delta_Ve = generate_electrical_pulse(v_diff_max,cell_list,vis,fp_indice
     Delta_Ve = (v_diff_max(1,fp_indices)).';
     Delta_Ve = repmat(Delta_Ve,1,Constants.t_size);
 
-    burst_amplitudes = [1,1.5,2,3];
+    burst_amplitudes = [4,5,6,7];
     burst_duration = 30e-3;
     burst_duration_ind = int32(burst_duration/Constants.time_step);
     burst_interval = Constants.simulation_duration/length(burst_amplitudes);
