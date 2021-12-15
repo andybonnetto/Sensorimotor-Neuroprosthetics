@@ -48,7 +48,7 @@ function M_cells = Temporal_modeling_matrix(cell_list,init,L,Ma,Delta_Ve)
         assignin("base","V_m_init",V_m_init)
     end
     close(w);
-    assignin("base","M_cells",M_cells)
+%     assignin("base","M_cells",M_cells)
 
 end
 
@@ -71,7 +71,9 @@ function M_cells = get_Gsyn(M_cells,L,t,Ma)
 % Compute Gsyn at time t for light protocol L.
    
     M_cells = M_cells.update_V_pre(t);
-    M_cells = M_cells.add_light_syn(L(:,t));
+    if not(sum(M_cells.names == "CR","all") == 0)
+        M_cells = M_cells.add_light_syn(L(:,t));
+    end
     i = 2;
     for type = M_cells.types(2:end)
 

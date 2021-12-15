@@ -36,7 +36,7 @@ classdef M < handle
         function M = M(cell_list)
             import Constants.*
 
-            M.types = ["Light-CR","CR-HRZ","HRZ-CR","CR-BP_on","CR-BP_off", "BP_on-AM_WF_on", "BP_off-AM_WF_off", "BP_on-AM_NF_on", "AM_WF_on-GL_on", "AM_WF_off*-GL_off", "AM_NF_on-GL_off","BP_on-GL_on","BP_off-GL_off"];
+            M.types = ["Light-CR","CR-HRZ","HRZ-CR","CR-BP_on","CR-BP_off", "BP_on-AM_WF_on", "BP_off-AM_WF_off", "BP_on-AM_NF_on", "AM_WF_on-GL_on", "AM_WF_off-GL_off", "AM_NF_on-GL_off","BP_on-GL_on","BP_off-GL_off"];
             M.IorD = [repmat("I", 1, size(M.types,2))];
             M.IorD(1) = "D"; M.IorD(4) = "D";
             M.indices = [1,1,2,1,1,1,1,1,2,2,3,1,1];
@@ -110,10 +110,12 @@ classdef M < handle
                     if cell.name == post_syn_type(2)
                         k = 1;
                         for pre_syn = cell.pre_syn_subset
-                            if cell_list(pre_syn).name == post_syn_type(1)
-                                M.D(i,j,k) = cell.dist_pre_syn_subset(k);
-                                M.pre_syn_mat(i,j,k) = cell.pre_syn_subset(k);
-                                k = k +1;
+                            if pre_syn < length(cell_list)
+                                if cell_list(pre_syn).name == post_syn_type(1)
+                                    M.D(i,j,k) = cell.dist_pre_syn_subset(k);
+                                    M.pre_syn_mat(i,j,k) = cell.pre_syn_subset(k);
+                                    k = k +1;
+                                end 
                             end
                         end
                     end 

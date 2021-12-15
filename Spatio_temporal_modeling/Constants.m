@@ -5,8 +5,6 @@ classdef Constants
         time_coeff = 5;
         time_step = Constants.tau_syn/Constants.time_coeff;
         simulation_duration = 600e-3;
-        t_size = int32(Constants.simulation_duration/Constants.time_step);
-
-        
+        t_size = int32(Constants.simulation_duration/Constants.time_step); 
     end
 end

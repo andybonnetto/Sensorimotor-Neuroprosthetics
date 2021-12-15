@@ -1,4 +1,4 @@
-function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
+function [cell_list,cell_list_d,cell_list_full,fp_indices] = Spatial_modeling_automatized(vis,M,Populations,Degeneration,path_to_folder)
 
     import Cell.*
     % Spatial Modeling
@@ -16,6 +16,7 @@ function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M
                0 0;
                0 0]; % Center of the applied Gaussian function
 %     Gauss_degen = [0,0,0,0,0,0,0,0,0]; % Targeted populations for Gaussian degeneration (here we only target the CR and BP_on cells)
+    Full_Populations = [1,1,1,1,1,1,1,1,1];
 
     % Parameters
     Populations_name = ["CR","HRZ","BP_on","BP_off","AM_WF_on","AM_WF_off","AM_NF_on","GL_on","GL_off"]; % Populations respective name
@@ -40,22 +41,32 @@ function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M
     n_new = redefine_n(Populations,n);
     n_new_sum = cumsum(n_new);
     B = [0 n_new_sum];
-    assignin("base","n_CR",n_new(1));
+
+    n_new_full = redefine_n(Full_Populations,n);
+    n_new_sum_full = cumsum(n_new_full);
+    B_full = [0 n_new_sum_full];
+
+
+    assignin("base","n_CR",n_new_full(1));
     
     % Attribute one position to each cell and visualize the layers
-    cell_pos = create_pos(Populations,noise,lambda,sigma,z_min,z_max,n);
+    cell_pos = create_pos(Populations,noise,lambda,sigma,z_min,z_max,n_new);
+    cell_pos_full = create_pos(Full_Populations,noise,lambda,sigma,z_min,z_max,n_new_full);
 
     %Save cell_pos in a mat file
-    save_pos(cell_pos)
+%     save_pos(cell_pos)
 
     % Create a list with each cell properties and xyz position
     cell_list = create_list(Populations,Populations_name,cell_pos,B);
+    cell_list_full = create_list(Full_Populations,Populations_name,cell_pos_full,B_full);
 
     % Visualize the layers
     plot_layers(cell_list,n_new,um,cell_pos,vis);
+    plot_layers(cell_list_full,n_new_full,um,cell_pos_full,vis);
+    
 
     % Kill a certain percentage of cells by degeneration
-    [cell_list_degen,n_degen] = degeneration(cell_list,Populations,Degeneration,n_new);
+%     [cell_list_degen,n_degen] = degeneration(cell_list,Populations,Degeneration,n_new);
 %     n_degen_sum = cumsum(n_degen);
 %     B_degen = [0 n_degen_sum];
 
@@ -74,7 +85,8 @@ function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M
 
     % Connect the population of cells through synapses and visualize the
     % connections
-
+    
+    cell_list_full = connection_syn(cell_list_full,sigma,um,Full_Populations,Populations_connection,B_full);
     cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B);
 %     cell_list_degen = connection_syn(cell_list_degen,sigma,um,Populations,Populations_connection,B_degen);
     cell_list_d = connection_syn(cell_list_gauss_degen,sigma,um,Populations,Populations_connection,B_gauss_degen);
@@ -92,6 +104,7 @@ function [cell_list,cell_list_d,fp_indices] = Spatial_modeling_automatized(vis,M
         i = i+1;
     end
     save_pos(mat3D)
+    save_pos(cell_pos_full,"mat3D_full")
 %     
 %     %Save cell_list in a MAT-file 
 %     save_cell_list(cell_list)
@@ -259,9 +272,8 @@ end
 function cell_list = connection_syn(cell_list,sigma,um,Populations,Populations_connection,B)
 
     z_extent = 105*um;
-
+    w = waitbar(0,'wait wait');
     for i=1:9
-        w = waitbar(0,'wait wait');
         waitbar(i/9,w,"Make connections")
         if Populations(i) == 1
             for j=(B(i)+1):B(i+1)
@@ -376,9 +388,13 @@ function save_cell_list(cell_list)
     assignin("base","cell_list",cell_list)
 end
 
-function save_pos(mat)
+function save_pos(mat,name)
 %     save("3Dpos","mat")
-    assignin("base", "mat3D", mat);
+    if nargin < 2
+        assignin("base", "mat3D", mat);
+    else
+        assignin("base",name,mat)
+    end
 end
 
     function [cell_list_gauss_degen,n_gauss_degen] = gaussian_degen(Gauss_degen,cell_list,Populations,n_new,stand_dev,center,vis,Degeneration)
