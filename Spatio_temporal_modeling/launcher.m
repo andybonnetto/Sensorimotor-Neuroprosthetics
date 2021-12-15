@@ -49,7 +49,7 @@ if Light_or_Electrode
     end
     L = light_to_cells(mat3D,n_CR,modes,pp,1);
     disp("Pulsed light Stimulation")
-    Delta_Ve = zeros(M_cells.N_cells,Constants.t_size);
+    Delta_Ve = zeros(M_cells_ref.N_cells,Constants.t_size);
     M_cells_h = Temporal_modeling_matrix(cell_list_d,{M_init,V_m_init},L,Ma, Delta_Ve);
 else
     disp("Electrical stimulation")
@@ -99,7 +99,7 @@ V_m_init = M_cells_ref.V_S(:,end);
 % n2 = length(cell_list);
 % V_m_init = V_m_init(n1-n2+1:n1,:);
 V_m_init = V_m_init(fp_indices,:);
-M_init = M(cell_list);
+M_init = M(cell_list_d);
 
 if Light_or_Electrode 
     disp("Declare light protocol...")
@@ -113,7 +113,7 @@ if Light_or_Electrode
     end
     L = light_to_cells(mat3D,n_CR,modes,pp,1);
     disp("Pulsed light Stimulation")
-    Delta_Ve = zeros(M_cells.N_cells,Constants.t_size);
+    Delta_Ve = zeros(M_cells_ref.N_cells,Constants.t_size);
     M_cells = Temporal_modeling_matrix(cell_list_d,{M_init,V_m_init},L,Ma, Delta_Ve);
 else
     disp("Electrical stimulation")
